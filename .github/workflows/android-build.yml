@@ -3,25 +3,45 @@ name: Android Build
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_dispatch: # امکان اجرای دستی
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v5
+      # 1. دریافت کد
+      - name: Checkout code
+        uses: actions/checkout@v4 # نسخه پایدار v4 هنوز مشکلی ندارد، اما اگر ارور داد v5 بگذارید
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v5
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      # 2. تنظیم Node.js (رفع ارور Deprecated)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+      # 3. تنظیم Java (آپدیت به v5)
+      - name: Setup Java JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-    - name: Build with Gradle
-      run: ./gradlew build
+      # 4. تنظیم Android SDK
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      # 5. دادن مجوز اجرا
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      # 6. بیلد پروژه
+      - name: Build with Gradle
+        run: ./gradlew assembleDebug --stacktrace
+
+      # 7. آپلود فایل APK
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
