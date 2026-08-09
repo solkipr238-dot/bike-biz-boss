@@ -3,45 +3,47 @@ name: Android Build
 on:
   push:
     branches: [ "main" ]
-  workflow_dispatch: # امکان اجرای دستی
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. دریافت کد
       - name: Checkout code
-        uses: actions/checkout@v4 # نسخه پایدار v4 هنوز مشکلی ندارد، اما اگر ارور داد v5 بگذارید
+        uses: actions/checkout@v5
 
-      # 2. تنظیم Node.js (رفع ارور Deprecated)
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: '20'
+          bun-version: latest
 
-      # 3. تنظیم Java (آپدیت به v5)
+      - name: Install Dependencies
+        run: bun install
+
+      - name: Build Web Assets
+        run: bun run build
+
+      - name: Sync Capacitor
+        run: bunx cap sync android
+
       - name: Setup Java JDK
         uses: actions/setup-java@v5
         with:
+          distribution: 'zulu'
           java-version: '17'
-          distribution: 'temurin'
 
-      # 4. تنظیم Android SDK
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
-      # 5. دادن مجوز اجرا
-      - name: Grant execute permission
-        run: chmod +x gradlew
+      - name: Grant Execute Permission for Gradlew
+        run: chmod +x ./android/gradlew
 
-      # 6. بیلد پروژه
-      - name: Build with Gradle
-        run: ./gradlew assembleDebug --stacktrace
+      - name: Build APK
+        run: cd android && ./gradlew assembleDebug --stacktrace
 
-      # 7. آپلود فایل APK
-      - name: Upload APK
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
