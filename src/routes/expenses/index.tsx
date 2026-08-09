@@ -1,0 +1,144 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { Banknote, Gift, Coffee, Wrench, TrendingUp, ShieldAlert } from "lucide-react";
+import { AppShell } from "@/components/layout/AppShell";
+import { Chip, EmptyState, FilterChips, ListSkeleton, PageHeader } from "@/components/ui-kit";
+import { EXPENSE_LABEL, useStore, type ExpenseCategory } from "@/lib/store";
+import { faDateLong, money, toFa } from "@/lib/format";
+import { useFakeLoading } from "@/hooks/use-fake-loading";
+
+export const Route = createFileRoute("/expenses/")({
+  head: () => ({
+    meta: [
+      { title: "مدیریت هزینه‌ها | مدیریت تعمیرگاه" },
+      {
+        name: "description",
+        content: "ثبت و پیگیری هزینه‌های حقوق، پاداش، جریمه، برداشت شخصی و متفرقه.",
+      },
+      { property: "og:title", content: "مدیریت هزینه‌های تعمیرگاه دوچرخه" },
+      { property: "og:description", content: "خلاصه ماهانه و لیست کامل هزینه‌های ثبت‌شده." },
+    ],
+  }),
+  component: () => (
+    <AppShell>
+      <ExpensesPage />
+    </AppShell>
+  ),
+});
+
+const ICONS: Record<ExpenseCategory, typeof Banknote> = {
+  SALARY: Banknote,
+  BONUS: Gift,
+  PENALTY: ShieldAlert,
+  PERSONAL_WITHDRAWAL: Wrench,
+  MISCELLANEOUS: Coffee,
+};
+
+function ExpensesPage() {
+  const { state, user } = useStore();
+  const loading = useFakeLoading();
+  const [filter, setFilter] = useState<"ALL" | ExpenseCategory>("ALL");
+
+  const list = useMemo(() => {
+    if (!user) return [];
+    const isManager = user.role === "ADMIN" || user.role === "STORE_MANAGER";
+    return state.expenses
+      .filter((e) => isManager || e.createdBy === user.id)
+      .filter((e) => filter === "ALL" || e.category === filter);
+  }, [state.expenses, filter, user]);
+
+  const total = list.reduce((s, e) => s + e.amount, 0);
+
+  return (
+    <>
+      <PageHeader title="مدیریت هزینه‌ها" subtitle="ثبت، بررسی و تأیید هزینه‌های مجموعه" />
+
+      <div className="rounded-2xl bg-gradient-to-l from-accent to-primary-soft p-5">
+        <p className="text-sm text-muted-foreground">مجموع هزینه‌های این ماه</p>
+        <p className="num mt-2 text-3xl font-extrabold">{money(total, state.currency)}</p>
+        <p className="mt-2 flex items-center gap-1 text-sm font-bold text-primary">
+          <TrendingUp className="size-4" /> {toFa(12)}٪ افزایش نسبت به ماه قبل
+        </p>
+      </div>
+
+      <div className="mt-4">
+        <FilterChips
+          value={filter}
+          onChange={setFilter}
+          options={[
+            { value: "ALL", label: "همه" },
+            { value: "SALARY", label: "حقوق" },
+            { value: "BONUS", label: "پاداش" },
+            { value: "PENALTY", label: "جریمه" },
+            { value: "PERSONAL_WITHDRAWAL", label: "شخصی" },
+            { value: "MISCELLANEOUS", label: "متفرقه" },
+          ]}
+        />
+      </div>
+
+      <div className="mt-4">
+        {loading ? (
+          <ListSkeleton />
+        ) : list.length === 0 ? (
+          <EmptyState
+            icon={<Banknote className="size-6" />}
+            title="هزینه‌ای ثبت نشده"
+            description="با دکمه + هزینه جدیدی ثبت کنید."
+            action={
+              <Link
+                to="/expenses/new"
+                className="rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground"
+              >
+                ثبت هزینه
+              </Link>
+            }
+          />
+        ) : (
+          <ul className="space-y-3">
+            {list.map((e) => {
+              const Icon = ICONS[e.category];
+              const creator = state.users.find((u) => u.id === e.createdBy);
+              return (
+                <li key={e.id} className="app-card flex items-center gap-3 p-4">
+                  <div className="grid size-12 shrink-0 place-items-center rounded-full bg-accent text-accent-foreground">
+                    <Icon className="size-6" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate font-extrabold">{e.description || EXPENSE_LABEL[e.category]}</h3>
+                    <p className="mt-1 text-xs text-muted-foreground">{faDateLong(e.date)}</p>
+                  </div>
+                  <div className="shrink-0 text-end">
+                    <p className="num text-sm font-extrabold">{money(e.amount, state.currency)}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      ثبت: {creator?.fullName ?? "—"}
+                    </p>
+                    <Chip
+                      className="mt-1"
+                      tone={
+                        e.status === "APPROVED"
+                          ? "success"
+                          : e.status === "REJECTED"
+                            ? "danger"
+                            : e.status === "SYNCED_TO_ACCOUNTING"
+                              ? "info"
+                              : "warning"
+                      }
+                    >
+                      {e.status === "APPROVED"
+                        ? "تایید شده"
+                        : e.status === "REJECTED"
+                          ? "رد شده"
+                          : e.status === "SYNCED_TO_ACCOUNTING"
+                            ? "حسابداری"
+                            : "در انتظار"}
+                    </Chip>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+    </>
+  );
+}

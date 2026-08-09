@@ -1,0 +1,246 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Pencil, Plus, Trash2, Users } from "lucide-react";
+import { AppShell } from "@/components/layout/AppShell";
+import { Chip, EmptyState, PageHeader } from "@/components/ui-kit";
+import { Field, SelectField } from "@/components/forms/fields";
+import { ROLE_LABEL, can, uid, useStore, type Role } from "@/lib/store";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+export const Route = createFileRoute("/users")({
+  head: () => ({
+    meta: [
+      { title: "مدیریت کاربران | مدیریت تعمیرگاه" },
+      { name: "description", content: "مدیریت دسترسی‌ها و نقش‌های پرسنل فروشگاه و تعمیرگاه." },
+      { property: "og:title", content: "مدیریت کاربران تعمیرگاه دوچرخه" },
+      { property: "og:description", content: "افزودن، ویرایش و غیرفعال‌سازی کاربران سامانه." },
+    ],
+  }),
+  component: () => (
+    <AppShell>
+      <UsersPage />
+    </AppShell>
+  ),
+});
+
+function UsersPage() {
+  const { state, setState, user } = useStore();
+  const [open, setOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [form, setForm] = useState({
+    fullName: "",
+    username: "",
+    phone: "",
+    role: "EMPLOYEE" as Role,
+    title: "",
+  });
+
+  if (!can(user?.role, "users"))
+    return (
+      <EmptyState
+        icon={<Users className="size-6" />}
+        title="دسترسی ندارید"
+        description="این بخش فقط برای مدیر اصلی در دسترس است."
+      />
+    );
+
+  function openNew() {
+    setEditId(null);
+    setForm({ fullName: "", username: "", phone: "", role: "EMPLOYEE", title: "" });
+    setOpen(true);
+  }
+
+  function openEdit(id: string) {
+    const u = state.users.find((x) => x.id === id)!;
+    setEditId(id);
+    setForm({ fullName: u.fullName, username: u.username, phone: u.phone, role: u.role, title: u.title });
+    setOpen(true);
+  }
+
+  function save(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.fullName.trim() || !form.username.trim()) {
+      toast.error("نام و نام کاربری اجباری هستند.");
+      return;
+    }
+    setState((s) => ({
+      ...s,
+      users: editId
+        ? s.users.map((u) => (u.id === editId ? { ...u, ...form } : u))
+        : [
+            ...s.users,
+            {
+              id: uid("u"),
+              ...form,
+              isActive: true,
+              isWorker: form.role === "MECHANIC",
+            },
+          ],
+    }));
+    setOpen(false);
+    toast.success(editId ? "کاربر ویرایش شد" : "کاربر جدید افزوده شد");
+  }
+
+  return (
+    <>
+      <PageHeader
+        title="مدیریت کاربران"
+        subtitle="مدیریت دسترسی‌ها و نقش‌های پرسنل تعمیرگاه"
+        action={
+          <button
+            onClick={openNew}
+            className="flex items-center gap-1 rounded-full bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground"
+          >
+            <Plus className="size-4" /> افزودن کاربر
+          </button>
+        }
+      />
+
+      <ul className="grid gap-4 sm:grid-cols-2">
+        {state.users.map((u) => (
+          <li
+            key={u.id}
+            className={`app-card overflow-hidden border-e-4 p-4 ${
+              u.isActive ? "border-e-primary" : "border-e-destructive"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <Avatar className="size-12">
+                <AvatarFallback className="bg-accent font-bold text-accent-foreground">
+                  {u.fullName.slice(0, 1)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                <p className={`truncate font-extrabold ${!u.isActive ? "line-through opacity-70" : ""}`}>
+                  {u.fullName}
+                </p>
+                <p className="truncate text-sm text-muted-foreground">{u.title}</p>
+              </div>
+              <Chip tone={u.role === "ADMIN" ? "success" : "neutral"}>{ROLE_LABEL[u.role]}</Chip>
+            </div>
+            <div className="mt-4 flex items-center justify-between border-t pt-3">
+              <span
+                className={`flex items-center gap-1.5 text-sm font-bold ${
+                  u.isActive ? "text-primary" : "text-destructive"
+                }`}
+              >
+                <span className={`size-2 rounded-full ${u.isActive ? "bg-primary" : "bg-destructive"}`} />
+                {u.isActive ? "فعال" : "غیرفعال"}
+              </span>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => openEdit(u.id)}
+                  aria-label={`ویرایش ${u.fullName}`}
+                  className="grid size-10 place-items-center rounded-lg hover:bg-accent"
+                >
+                  <Pencil className="size-5" />
+                </button>
+                <button
+                  onClick={() => setDeleteId(u.id)}
+                  aria-label={`غیرفعال‌سازی ${u.fullName}`}
+                  className="grid size-10 place-items-center rounded-lg text-destructive hover:bg-destructive/10"
+                >
+                  <Trash2 className="size-5" />
+                </button>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent side="bottom" className="safe-bottom max-h-[92vh] overflow-y-auto rounded-t-3xl">
+          <SheetHeader className="text-start">
+            <SheetTitle>{editId ? "ویرایش کاربر" : "افزودن کاربر جدید"}</SheetTitle>
+          </SheetHeader>
+          <form onSubmit={save} className="space-y-4 p-4" noValidate>
+            <Field
+              id="fullName"
+              label="نام و نام خانوادگی"
+              required
+              value={form.fullName}
+              onChange={(v) => setForm({ ...form, fullName: v })}
+            />
+            <Field
+              id="username"
+              label="نام کاربری"
+              required
+              value={form.username}
+              onChange={(v) => setForm({ ...form, username: v })}
+            />
+            <Field
+              id="phone"
+              label="شماره موبایل"
+              value={form.phone}
+              onChange={(v) => setForm({ ...form, phone: v })}
+              placeholder="09XXXXXXXXX"
+            />
+            <Field
+              id="title"
+              label="سمت"
+              value={form.title}
+              onChange={(v) => setForm({ ...form, title: v })}
+              placeholder="مثلاً مکانیک ارشد"
+            />
+            <SelectField
+              id="role"
+              label="نقش"
+              required
+              value={form.role}
+              onChange={(v) => setForm({ ...form, role: v as Role })}
+              options={(Object.keys(ROLE_LABEL) as Role[]).map((r) => ({
+                value: r,
+                label: ROLE_LABEL[r],
+              }))}
+            />
+            <button
+              type="submit"
+              className="min-h-13 w-full rounded-xl bg-primary py-3.5 font-extrabold text-primary-foreground"
+            >
+              ذخیره
+            </button>
+          </form>
+        </SheetContent>
+      </Sheet>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>غیرفعال‌سازی کاربر</AlertDialogTitle>
+            <AlertDialogDescription>
+              کاربر غیرفعال می‌شود و امکان ورود نخواهد داشت. این کار قابل بازگشت است.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>انصراف</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setState((s) => ({
+                  ...s,
+                  users: s.users.map((u) => (u.id === deleteId ? { ...u, isActive: false } : u)),
+                }));
+                setDeleteId(null);
+                toast.success("کاربر غیرفعال شد");
+              }}
+            >
+              غیرفعال کن
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}
