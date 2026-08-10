@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Bike, Eye, EyeOff, Lock, LogIn, User } from "lucide-react";
 import { toast } from "sonner";
-import { useStore, ROLE_LABEL } from "@/lib/store";
+import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/")({
 });
 
 function LoginPage() {
-  const { login, user, state } = useStore();
+  const { login, user } = useStore();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -43,11 +43,11 @@ function LoginPage() {
     if (password.length < 4) return setError("رمز عبور باید حداقل ۴ کاراکتر باشد.");
     setLoading(true);
     setTimeout(() => {
-      const ok = login(username);
+      const ok = login(username, password);
       setLoading(false);
       if (!ok) setError("نام کاربری یا رمز عبور اشتباه است.");
       else toast.success("خوش آمدید!");
-    }, 450);
+    }, 350);
   }
 
   return (
@@ -57,12 +57,13 @@ function LoginPage() {
           <div className="grid size-20 place-items-center rounded-full bg-accent">
             <Bike className="size-10 text-primary" />
           </div>
-          <h1 className="text-2xl font-extrabold text-primary">VeloFlow</h1>
+          <h1 className="text-2xl font-extrabold text-primary">دز رکاب</h1>
           <h2 className="mt-3 text-xl font-extrabold leading-8">
-            خوش آمدید به سامانه مدیریت تعمیرگاه
+            خوش امدید به اپلیکیشن دز رکاب
           </h2>
           <p className="text-sm text-muted-foreground">مدیریت هوشمند فروشگاه و تعمیرگاه</p>
         </div>
+
 
         <form onSubmit={submit} className="mt-7 space-y-4" noValidate>
           <div className="space-y-2">
@@ -139,26 +140,8 @@ function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 rounded-xl bg-secondary p-4">
-          <p className="mb-2 text-xs font-bold text-muted-foreground">
-            ورود سریع نمونه (محیط توسعه) — رمز دلخواه ۴ کاراکتر:
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {state.users.map((u) => (
-              <button
-                key={u.id}
-                type="button"
-                onClick={() => {
-                  setUsername(u.username);
-                  setPassword("1234");
-                }}
-                className="rounded-full bg-card px-3 py-1.5 text-xs font-bold hover:bg-accent"
-              >
-                {u.username} · {ROLE_LABEL[u.role]}
-              </button>
-            ))}
-          </div>
-        </div>
+
+
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           نیاز به راهنمایی دارید؟ <span className="font-bold text-primary">تماس با پشتیبانی</span>

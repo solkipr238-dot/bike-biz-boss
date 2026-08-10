@@ -6,7 +6,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Chip, EmptyState, PageHeader } from "@/components/ui-kit";
 import { AmountField, InfoRow, TextArea } from "@/components/forms/fields";
 import { PRIORITY_LABEL, TASK_STATUS_LABEL, can, useStore } from "@/lib/store";
-import { faDateLong, money } from "@/lib/format";
+import { faDateTimeLong, money } from "@/lib/format";
 
 export const Route = createFileRoute("/tasks/$id")({
   head: () => ({
@@ -115,7 +115,7 @@ function TaskDetail() {
       <div className="app-card divide-y p-4 sm:p-6">
         <InfoRow label="توضیحات">{task.description || "—"}</InfoRow>
         <InfoRow label="اولویت">{PRIORITY_LABEL[task.priority]}</InfoRow>
-        <InfoRow label="تاریخ سررسید">{task.dueDate ? faDateLong(task.dueDate) : "—"}</InfoRow>
+        <InfoRow label="تاریخ سررسید">{task.dueDate ? faDateTimeLong(task.dueDate) : "—"}</InfoRow>
         <InfoRow label="دستمزد">
           <span className="num">{money(task.wage, state.currency)}</span>
         </InfoRow>

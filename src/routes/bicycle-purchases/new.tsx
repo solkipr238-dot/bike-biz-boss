@@ -3,8 +3,10 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/ui-kit";
-import { BIKE_TYPE_LABEL, uid, useStore, type BikeType } from "@/lib/store";
-import { AmountField, Field, FormActions, TextArea } from "@/components/forms/fields";
+import { BIKE_SIZES, BIKE_TYPE_LABEL, uid, useStore, type BikeType } from "@/lib/store";
+import { AmountField, Field, FormActions, OptionGroup, TextArea } from "@/components/forms/fields";
+import { toFa } from "@/lib/format";
+
 
 export const Route = createFileRoute("/bicycle-purchases/new")({
   head: () => ({
@@ -90,16 +92,16 @@ function NewPurchase() {
           error={errors['brand']}
           placeholder="مثلاً Giant Talon 2"
         />
+        <OptionGroup
+          label="سایز دوچرخه"
+          required
+          value={form.size}
+          onChange={(v) => setForm({ ...form, size: v })}
+          error={errors['size']}
+          options={BIKE_SIZES.map((s) => ({ value: s, label: toFa(s) }))}
+        />
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field
-            id="size"
-            label="سایز دوچرخه"
-            required
-            value={form.size}
-            onChange={(v) => setForm({ ...form, size: v })}
-            error={errors['size']}
-            placeholder="M (متوسط)"
-          />
+
           <Field
             id="color"
             label="رنگ"

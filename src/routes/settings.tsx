@@ -40,6 +40,36 @@ function SettingsPage() {
 
       <section className="app-card mb-4 p-4 sm:p-6">
         <h2 className="mb-4 flex items-center gap-2 font-extrabold">
+          <Moon className="size-5 text-primary" /> نمایش و تم
+        </h2>
+        <div className="grid grid-cols-2 gap-2">
+          {(
+            [
+              ["light", "حالت روز", Sun],
+              ["dark", "حالت شب", Moon],
+            ] as const
+          ).map(([value, label, Icon]) => (
+            <button
+              key={value}
+              onClick={() => {
+                setTheme(value);
+                toast.success(`${label} فعال شد`);
+              }}
+              aria-pressed={state.theme === value}
+              className={`flex min-h-12 items-center justify-center gap-2 rounded-xl font-bold ${
+                state.theme === value
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground"
+              }`}
+            >
+              <Icon className="size-4" /> {label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="app-card mb-4 p-4 sm:p-6">
+        <h2 className="mb-4 flex items-center gap-2 font-extrabold">
           <Bell className="size-5 text-primary" /> اعلان‌ها
         </h2>
         <label className="flex items-center justify-between gap-3 py-3">
@@ -64,6 +94,97 @@ function SettingsPage() {
           <Switch checked={emailAlerts} onCheckedChange={setEmailAlerts} />
         </label>
       </section>
+
+      {isAdmin ? (
+        <section className="app-card mb-4 p-4 sm:p-6">
+          <h2 className="mb-1 flex items-center gap-2 font-extrabold">
+            <AlarmClock className="size-5 text-primary" /> بازهٔ آلارم کاربران
+          </h2>
+          <p className="mb-4 text-xs leading-6 text-muted-foreground">
+            اعلان‌های ثبت‌شده خارج از این بازه جمع می‌شوند و در ابتدای بازه یکجا با صدا و ویبره برای
+            کاربران هدف ارسال می‌شوند. اعلان‌های فوری بلافاصله ارسال می‌شوند.
+          </p>
+          <label className="flex items-center justify-between gap-3 py-3">
+            <span className="text-sm font-bold">فعال بودن بازهٔ آلارم</span>
+            <Switch
+              checked={alarms.enabled}
+              onCheckedChange={(v) => updateAlarms({ enabled: v })}
+            />
+          </label>
+          <div className="grid grid-cols-2 gap-3 border-t py-3">
+            <div className="space-y-2">
+              <label htmlFor="alarm-start" className="block text-sm font-bold">
+                از ساعت
+              </label>
+              <select
+                id="alarm-start"
+                value={alarms.startHour}
+                onChange={(e) => updateAlarms({ startHour: Number(e.target.value) })}
+                className="h-12 w-full rounded-xl border bg-card px-3 text-sm font-bold outline-none focus:ring-2 focus:ring-ring"
+              >
+                {HOURS.map((h) => (
+                  <option key={h} value={h}>
+                    {toFa(String(h).padStart(2, "0"))}:۰۰
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="alarm-end" className="block text-sm font-bold">
+                تا ساعت
+              </label>
+              <select
+                id="alarm-end"
+                value={alarms.endHour}
+                onChange={(e) => updateAlarms({ endHour: Number(e.target.value) })}
+                className="h-12 w-full rounded-xl border bg-card px-3 text-sm font-bold outline-none focus:ring-2 focus:ring-ring"
+              >
+                {HOURS.map((h) => (
+                  <option key={h} value={h}>
+                    {toFa(String(h).padStart(2, "0"))}:۰۰
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="border-t py-3">
+            <span className="mb-2 block text-sm font-bold">نقش‌های مشمول بازهٔ آلارم</span>
+            <div className="flex flex-wrap gap-2">
+              {(Object.keys(ROLE_LABEL) as Role[]).map((r) => {
+                const active = alarms.roles.includes(r);
+                return (
+                  <button
+                    key={r}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() =>
+                      updateAlarms({
+                        roles: active ? alarms.roles.filter((x) => x !== r) : [...alarms.roles, r],
+                      })
+                    }
+                    className={`rounded-full px-4 py-2 text-sm font-bold ${
+                      active
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-secondary-foreground"
+                    }`}
+                  >
+                    {ROLE_LABEL[r]}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <label className="flex items-center justify-between gap-3 border-t py-3">
+            <span className="text-sm font-bold">ویبره هنگام دریافت آلارم</span>
+            <Switch checked={alarms.vibrate} onCheckedChange={(v) => updateAlarms({ vibrate: v })} />
+          </label>
+          <label className="flex items-center justify-between gap-3 border-t py-3">
+            <span className="text-sm font-bold">صدای آلارم</span>
+            <Switch checked={alarms.sound} onCheckedChange={(v) => updateAlarms({ sound: v })} />
+          </label>
+        </section>
+      ) : null}
+
 
       {isAdmin ? (
         <>

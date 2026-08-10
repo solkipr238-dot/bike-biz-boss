@@ -12,7 +12,7 @@ import {
   type InvoiceItem,
   type PurchaseInvoice,
 } from "@/lib/store";
-import { faDateLong, money, toFa } from "@/lib/format";
+import { faDateTimeLong, money, toFa } from "@/lib/format";
 
 export const Route = createFileRoute("/purchase-invoices/$id")({
   head: () => ({
@@ -118,7 +118,7 @@ function InvoiceDetail() {
 
       <div className="app-card divide-y p-4 sm:p-6">
         <InfoRow label="تأمین‌کننده">{inv.supplier || "—"}</InfoRow>
-        <InfoRow label="تاریخ ثبت">{faDateLong(inv.date)}</InfoRow>
+        <InfoRow label="تاریخ ثبت">{faDateTimeLong(inv.date)}</InfoRow>
         <InfoRow label="توضیحات">{inv.notes || "—"}</InfoRow>
         {inv.accountingRef ? <InfoRow label="شماره سند">{inv.accountingRef}</InfoRow> : null}
       </div>

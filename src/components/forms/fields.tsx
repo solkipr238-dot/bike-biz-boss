@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { formatAmountInput, parseAmountInput, toFa } from "@/lib/format";
 import type { Currency } from "@/lib/format";
+import { JALALI_MONTHS, jalaliMonthLength, jalaliToDate, toJalali } from "@/lib/jalali";
+
 
 export function Field({
   id,
@@ -155,6 +157,10 @@ export function SelectField({
   );
 }
 
+/**
+ * Shamsi (Jalali) date picker. `value` stays an ISO `YYYY-MM-DD` string so the
+ * rest of the app keeps working, but the user only ever sees Persian dates.
+ */
 export function DateField({
   id,
   label,
@@ -166,29 +172,128 @@ export function DateField({
   value: string;
   onChange: (v: string) => void;
 }) {
-  const jalali = value
-    ? new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      }).format(new Date(value))
-    : "";
+  const base = value ? new Date(`${value}T00:00:00`) : new Date();
+  const safe = Number.isNaN(base.getTime()) ? new Date() : base;
+  const { jy, jm, jd } = toJalali(safe);
+  const thisYear = toJalali(new Date()).jy;
+  const years = Array.from({ length: 11 }, (_, i) => thisYear - 5 + i);
+
+  function set(nextY: number, nextM: number, nextD: number) {
+    const maxD = jalaliMonthLength(nextY, nextM);
+    const day = Math.min(nextD, maxD);
+    const d = jalaliToDate(nextY, nextM, day);
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+      d.getDate(),
+    ).padStart(2, "0")}`;
+    onChange(iso);
+  }
+
+  const selectCls =
+    "h-12 w-full rounded-xl border bg-card px-2 text-sm font-bold outline-none focus:ring-2 focus:ring-ring";
+
   return (
     <div className="space-y-2">
-      <label htmlFor={id} className="block text-sm font-bold">
+      <span id={`${id}-label`} className="block text-sm font-bold">
         {label}
-      </label>
-      <input
-        id={id}
-        type="date"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-12 w-full rounded-xl border bg-card px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-      />
-      {jalali ? <p className="text-xs text-muted-foreground">تاریخ شمسی: {jalali}</p> : null}
+      </span>
+      <div className="grid grid-cols-3 gap-2" role="group" aria-labelledby={`${id}-label`}>
+        <select
+          id={id}
+          aria-label="روز"
+          value={jd}
+          onChange={(e) => set(jy, jm, Number(e.target.value))}
+          className={selectCls}
+        >
+          {Array.from({ length: jalaliMonthLength(jy, jm) }, (_, i) => i + 1).map((d) => (
+            <option key={d} value={d}>
+              {toFa(d)}
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label="ماه"
+          value={jm}
+          onChange={(e) => set(jy, Number(e.target.value), jd)}
+          className={selectCls}
+        >
+          {JALALI_MONTHS.map((m, i) => (
+            <option key={m} value={i + 1}>
+              {m}
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label="سال"
+          value={jy}
+          onChange={(e) => set(Number(e.target.value), jm, jd)}
+          className={selectCls}
+        >
+          {years.map((y) => (
+            <option key={y} value={y}>
+              {toFa(y)}
+            </option>
+          ))}
+        </select>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        تاریخ انتخاب‌شده: {toFa(jd)} {JALALI_MONTHS[jm - 1]} {toFa(jy)}
+      </p>
     </div>
   );
 }
+
+/** Compact single-choice picker rendered as pressable chips. */
+export function OptionGroup({
+  label,
+  value,
+  onChange,
+  options,
+  required,
+  error,
+  columns = 4,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+  required?: boolean;
+  error?: string | undefined;
+  columns?: number;
+}) {
+  return (
+    <div className="space-y-2">
+      <span className="block text-sm font-bold">
+        {label} {required ? <span className="text-destructive">*</span> : null}
+      </span>
+      <div
+        className="grid gap-2"
+        style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+      >
+        {options.map((o) => (
+          <button
+            type="button"
+            key={o.value}
+            onClick={() => onChange(o.value)}
+            aria-pressed={value === o.value}
+            className={`min-h-12 rounded-xl text-sm font-bold ${
+              value === o.value
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-secondary-foreground"
+            }`}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+      {error ? (
+        <p role="alert" className="text-xs font-bold text-destructive">
+          {error}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 
 export function FormActions({
   saving,

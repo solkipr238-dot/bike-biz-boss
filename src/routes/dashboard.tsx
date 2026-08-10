@@ -11,7 +11,7 @@ import {
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader, StatCard, Chip, EmptyState } from "@/components/ui-kit";
 import { useStore, TASK_STATUS_LABEL } from "@/lib/store";
-import { faDate, money, toFa } from "@/lib/format";
+import { faDateTime, money, toFa } from "@/lib/format";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -158,7 +158,7 @@ function Dashboard() {
               <div className="min-w-0 flex-1">
                 <p className="truncate font-bold">{e.description || "هزینه ثبت‌شده"}</p>
                 <p className="num truncate text-sm text-muted-foreground">
-                  {money(e.amount, state.currency)} · {faDate(e.date)}
+                  {money(e.amount, state.currency)} · {faDateTime(e.date)}
                 </p>
               </div>
             </li>

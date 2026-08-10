@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/ui-kit";
-import { AmountField, DateField, FormActions, SelectField, TextArea } from "@/components/forms/fields";
+import { AmountField, DateField, Field, FormActions, SelectField, TextArea } from "@/components/forms/fields";
 import { EXPENSE_LABEL, can, uid, useStore, type ExpenseCategory } from "@/lib/store";
 
 type Search = { category?: ExpenseCategory };
@@ -32,11 +32,13 @@ function NewExpense() {
   const { state, setState, user, notify } = useStore();
   const navigate = useNavigate();
   const [cat, setCat] = useState<ExpenseCategory>(category ?? "MISCELLANEOUS");
+  const [name, setName] = useState("");
   const [amount, setAmount] = useState(0);
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [description, setDescription] = useState("");
   const [relatedUserId, setRelatedUserId] = useState("");
   const [error, setError] = useState("");
+  const [nameError, setNameError] = useState("");
 
   const allowedCats = (Object.keys(EXPENSE_LABEL) as ExpenseCategory[]).filter(
     (c) => c !== "PERSONAL_WITHDRAWAL" || can(user?.role, "personalWithdrawal"),
@@ -44,6 +46,12 @@ function NewExpense() {
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
+    setError("");
+    setNameError("");
+    if (cat === "MISCELLANEOUS" && !name.trim()) {
+      setNameError("نام هزینه را وارد کنید.");
+      return;
+    }
     if (amount <= 0) {
       setError("مبلغ هزینه را وارد کنید.");
       return;
@@ -56,8 +64,9 @@ function NewExpense() {
           id: uid("e"),
           category: cat,
           amount,
-          date: new Date(date).toISOString(),
+          date: new Date(`${date}T${new Date().toTimeString().slice(0, 8)}`).toISOString(),
           description,
+          ...(cat === "MISCELLANEOUS" && name.trim() ? { name: name.trim() } : {}),
           ...(relatedUserId ? { relatedUserId } : {}),
           createdBy: user.id,
           status: "PENDING",
@@ -70,7 +79,7 @@ function NewExpense() {
         ? ["ADMIN", "STORE_MANAGER"]
         : ["ADMIN"],
       title: "هزینه جدید ثبت شد",
-      body: `${EXPENSE_LABEL[cat]} به مبلغ ثبت‌شده نیاز به بررسی دارد.`,
+      body: `${cat === "MISCELLANEOUS" && name.trim() ? name.trim() : EXPENSE_LABEL[cat]} به مبلغ ثبت‌شده نیاز به بررسی دارد.`,
       url: "/expenses",
       type: "expense",
       priority: "NORMAL",
@@ -91,6 +100,17 @@ function NewExpense() {
           onChange={(v) => setCat(v as ExpenseCategory)}
           options={allowedCats.map((c) => ({ value: c, label: EXPENSE_LABEL[c] }))}
         />
+        {cat === "MISCELLANEOUS" ? (
+          <Field
+            id="expense-name"
+            label="نام هزینه"
+            required
+            value={name}
+            onChange={setName}
+            error={nameError || undefined}
+            placeholder="مثلاً خرید لوازم مصرفی"
+          />
+        ) : null}
         <AmountField
           id="amount"
           label="مبلغ"
@@ -111,6 +131,7 @@ function NewExpense() {
             ...state.users.map((u) => ({ value: u.id, label: u.fullName })),
           ]}
         />
+
         <TextArea
           id="description"
           label="توضیحات"

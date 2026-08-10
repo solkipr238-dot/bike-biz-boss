@@ -4,7 +4,7 @@ import { Search, ShoppingCart, Calendar, Ruler, CheckCircle2, Clock, XCircle } f
 import { AppShell } from "@/components/layout/AppShell";
 import { Chip, EmptyState, FilterChips, ListSkeleton, PageHeader } from "@/components/ui-kit";
 import { BIKE_TYPE_LABEL, useStore, type BicyclePurchase } from "@/lib/store";
-import { faDate, money } from "@/lib/format";
+import { faDateTime, money } from "@/lib/format";
 import { useFakeLoading } from "@/hooks/use-fake-loading";
 
 export const Route = createFileRoute("/bicycle-purchases/")({
@@ -128,7 +128,7 @@ function PurchasesPage() {
                       </p>
                       <div className="mt-4 flex items-end justify-between gap-3 border-t pt-3">
                         <span className="flex items-center gap-1 rounded-lg bg-accent px-2 py-1 text-xs font-bold text-accent-foreground">
-                          <Calendar className="size-3.5" /> {faDate(p.createdAt)}
+                          <Calendar className="size-3.5" /> {faDateTime(p.createdAt)}
                         </span>
                         <div className="text-end">
                           <p className="text-xs text-muted-foreground">قیمت خرید</p>

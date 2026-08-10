@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Banknote, Bell, CheckCheck, ShoppingCart, Wrench } from "lucide-react";
+import { Banknote, Bell, CheckCheck, Clock, ShoppingCart, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
 import { EmptyState, PageHeader } from "@/components/ui-kit";
-import { useStore } from "@/lib/store";
-import { relativeTime } from "@/lib/format";
+import { isForUser, useStore } from "@/lib/store";
+import { faDateTimeLong, relativeTime, toFa } from "@/lib/format";
+
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/notifications")({
@@ -38,19 +39,24 @@ function Notifications() {
   const { state, setState, user } = useStore();
   if (!user) return null;
 
-  const items = state.notifications.filter((n) => n.userRole.includes(user.role));
+  // Queued alarms stay hidden until their delivery window opens.
+  const items = state.notifications.filter(
+    (n) => isForUser(n, user) && new Date(n.deliverAt).getTime() <= Date.now(),
+  );
+  const queued = state.notifications.filter(
+    (n) => isForUser(n, user) && new Date(n.deliverAt).getTime() > Date.now(),
+  );
   const today = items.filter((n) => Date.now() - new Date(n.createdAt).getTime() < 86_400_000);
   const older = items.filter((n) => Date.now() - new Date(n.createdAt).getTime() >= 86_400_000);
 
   function markAll() {
     setState((s) => ({
       ...s,
-      notifications: s.notifications.map((n) =>
-        n.userRole.includes(user!.role) ? { ...n, isRead: true } : n,
-      ),
+      notifications: s.notifications.map((n) => (isForUser(n, user!) ? { ...n, isRead: true } : n)),
     }));
     toast.success("همه اعلان‌ها خوانده شد");
   }
+
 
   function markOne(id: string) {
     setState((s) => ({
@@ -113,6 +119,15 @@ function Notifications() {
           </button>
         }
       />
+      {queued.length ? (
+        <div className="app-card mb-2 flex items-start gap-3 p-4">
+          <Clock className="mt-0.5 size-5 shrink-0 text-primary" />
+          <p className="text-sm leading-6">
+            {toFa(queued.length)} اعلان در صف است و در بازهٔ مجاز آلارم ارسال می‌شود
+            {queued[0] ? ` (اولین ارسال: ${faDateTimeLong(queued[0].deliverAt)})` : ""}.
+          </p>
+        </div>
+      ) : null}
       {items.length === 0 ? (
         <EmptyState
           icon={<Bell className="size-6" />}
@@ -125,6 +140,7 @@ function Notifications() {
           {group("قبل‌تر", older)}
         </>
       )}
+
     </>
   );
 }
