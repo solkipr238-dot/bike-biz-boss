@@ -1,19 +1,31 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Bell, Coins, LogOut, Settings as SettingsIcon, TableProperties } from "lucide-react";
+import {
+  AlarmClock,
+  Bell,
+  Coins,
+  LogOut,
+  Moon,
+  Settings as SettingsIcon,
+  Sun,
+  TableProperties,
+} from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { EmptyState, PageHeader } from "@/components/ui-kit";
-import { ROLE_LABEL, can, useStore } from "@/lib/store";
+import { ROLE_LABEL, can, useStore, type AlarmSettings, type Role } from "@/lib/store";
+import { toFa } from "@/lib/format";
 import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
+
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
     meta: [
       { title: "تنظیمات سامانه | مدیریت تعمیرگاه" },
-      { name: "description", content: "تنظیم واحد پول، اعلان‌ها و نگاشت ستون‌های خروجی حسابداری." },
+      { name: "description", content: "تنظیم تم روز و شب، بازهٔ آلارم، واحد پول و خروجی حسابداری." },
       { property: "og:title", content: "تنظیمات سامانه تعمیرگاه دوچرخه" },
-      { property: "og:description", content: "پیکربندی واحد پول، اعلان‌ها و خروجی حسابداری." },
+      { property: "og:description", content: "پیکربندی تم، آلارم‌ها، واحد پول و خروجی حسابداری." },
     ],
   }),
   component: () => (
@@ -24,7 +36,7 @@ export const Route = createFileRoute("/settings")({
 });
 
 function SettingsPage() {
-  const { state, setState, user, logout } = useStore();
+  const { state, setState, user, logout, setTheme } = useStore();
   const navigate = useNavigate();
   const [push, setPush] = useState(false);
   const [emailAlerts, setEmailAlerts] = useState(true);
@@ -33,6 +45,10 @@ function SettingsPage() {
   if (!user) return null;
 
   const isAdmin = can(user.role, "settings");
+  const alarms = state.alarms;
+  const updateAlarms = (patch: Partial<AlarmSettings>) =>
+    setState((s) => ({ ...s, alarms: { ...s.alarms, ...patch } }));
+
 
   return (
     <>
