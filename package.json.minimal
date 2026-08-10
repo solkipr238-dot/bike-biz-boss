@@ -1,0 +1,23 @@
+{
+  "name": "tanstack_start_ts",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/cli": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@tanstack/react-start": "1.168.32",
+    "@tanstack/router-plugin": "1.168.23",
+    "vite": "^8.2.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "typescript": "^5.8.3"
+  }
+}
