@@ -4,7 +4,7 @@ import { Banknote, Gift, Coffee, Wrench, TrendingUp, ShieldAlert } from "lucide-
 import { AppShell } from "@/components/layout/AppShell";
 import { Chip, EmptyState, FilterChips, ListSkeleton, PageHeader } from "@/components/ui-kit";
 import { EXPENSE_LABEL, useStore, type ExpenseCategory } from "@/lib/store";
-import { faDateLong, money, toFa } from "@/lib/format";
+import { faDateTimeLong, money, toFa } from "@/lib/format";
 import { useFakeLoading } from "@/hooks/use-fake-loading";
 
 export const Route = createFileRoute("/expenses/")({
@@ -104,9 +104,12 @@ function ExpensesPage() {
                     <Icon className="size-6" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="truncate font-extrabold">{e.description || EXPENSE_LABEL[e.category]}</h3>
-                    <p className="mt-1 text-xs text-muted-foreground">{faDateLong(e.date)}</p>
+                    <h3 className="truncate font-extrabold">
+                      {e.name || e.description || EXPENSE_LABEL[e.category]}
+                    </h3>
+                    <p className="mt-1 text-xs text-muted-foreground">{faDateTimeLong(e.date)}</p>
                   </div>
+
                   <div className="shrink-0 text-end">
                     <p className="num text-sm font-extrabold">{money(e.amount, state.currency)}</p>
                     <p className="mt-1 text-xs text-muted-foreground">

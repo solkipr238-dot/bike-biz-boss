@@ -6,7 +6,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Chip, EmptyState, PageHeader } from "@/components/ui-kit";
 import { InfoRow } from "@/components/forms/fields";
 import { BIKE_TYPE_LABEL, can, useStore } from "@/lib/store";
-import { faDateLong, money } from "@/lib/format";
+import { faDateTimeLong, money } from "@/lib/format";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -136,7 +136,7 @@ function PurchaseDetail() {
         <InfoRow label="قیمت خرید">
           <span className="num">{money(item.purchasePrice, state.currency)}</span>
         </InfoRow>
-        <InfoRow label="تاریخ ثبت">{faDateLong(item.createdAt)}</InfoRow>
+        <InfoRow label="تاریخ ثبت">{faDateTimeLong(item.createdAt)}</InfoRow>
         <InfoRow label="توضیحات">{item.description || "—"}</InfoRow>
         {item.reviewNote ? <InfoRow label="دلیل رد">{item.reviewNote}</InfoRow> : null}
         {item.accountingRef ? <InfoRow label="شماره سند">{item.accountingRef}</InfoRow> : null}

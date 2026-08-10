@@ -1,4 +1,7 @@
+import { JALALI_MONTHS, toJalali } from "./jalali";
+
 const FA_DIGITS = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
+
 
 export function toFa(value: string | number): string {
   return String(value).replace(/\d/g, (d) => FA_DIGITS[Number(d)]!);
@@ -17,39 +20,45 @@ export function money(amount: number, currency: Currency = "TOMAN"): string {
   return `${toFa(groupDigits(value))} ${currency === "RIAL" ? "ریال" : "تومان"}`;
 }
 
-const jalali = new Intl.DateTimeFormat("fa-IR-u-ca-persian-nu-latn", {
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-});
-
-const jalaliLong = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-});
-
 /** Jalali date as ۱۴۰۲/۰۸/۱۵ */
 export function faDate(iso: string | Date): string {
   const d = typeof iso === "string" ? new Date(iso) : iso;
-  return toFa(jalali.format(d).replace(/\//g, "/"));
+  if (Number.isNaN(d.getTime())) return "—";
+  const { jy, jm, jd } = toJalali(d);
+  return toFa(`${jy}/${String(jm).padStart(2, "0")}/${String(jd).padStart(2, "0")}`);
 }
 
 /** Jalali date as ۱۵ آبان ۱۴۰۲ */
 export function faDateLong(iso: string | Date): string {
   const d = typeof iso === "string" ? new Date(iso) : iso;
-  return jalaliLong.format(d);
+  if (Number.isNaN(d.getTime())) return "—";
+  const { jy, jm, jd } = toJalali(d);
+  return `${toFa(jd)} ${JALALI_MONTHS[jm - 1]} ${toFa(jy)}`;
 }
 
 export function faTime(iso: string | Date): string {
   const d = typeof iso === "string" ? new Date(iso) : iso;
-  return toFa(
-    new Intl.DateTimeFormat("fa-IR-u-nu-latn", { hour: "2-digit", minute: "2-digit" }).format(d),
-  );
+  if (Number.isNaN(d.getTime())) return "—";
+  return toFa(`${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`);
+}
+
+/** ۱۴۰۲/۰۸/۱۵ - ۱۴:۳۰ */
+export function faDateTime(iso: string | Date): string {
+  const d = typeof iso === "string" ? new Date(iso) : iso;
+  if (Number.isNaN(d.getTime())) return "—";
+  return `${faDate(d)} – ${faTime(d)}`;
+}
+
+/** ۱۵ آبان ۱۴۰۲ ساعت ۱۴:۳۰ */
+export function faDateTimeLong(iso: string | Date): string {
+  const d = typeof iso === "string" ? new Date(iso) : iso;
+  if (Number.isNaN(d.getTime())) return "—";
+  return `${faDateLong(d)} ساعت ${faTime(d)}`;
 }
 
 export function relativeTime(iso: string | Date): string {
   const d = typeof iso === "string" ? new Date(iso) : iso;
+  if (Number.isNaN(d.getTime())) return "—";
   const diff = Math.round((d.getTime() - Date.now()) / 1000);
   const abs = Math.abs(diff);
   const rtf = new Intl.RelativeTimeFormat("fa-IR", { numeric: "auto" });
@@ -57,8 +66,9 @@ export function relativeTime(iso: string | Date): string {
   if (abs < 3600) return rtf.format(Math.round(diff / 60), "minute");
   if (abs < 86400) return rtf.format(Math.round(diff / 3600), "hour");
   if (abs < 2592000) return rtf.format(Math.round(diff / 86400), "day");
-  return faDate(d);
+  return faDateTime(d);
 }
+
 
 /** Turns an input value into a grouped, Persian-digit amount for display. */
 export function formatAmountInput(raw: string): string {

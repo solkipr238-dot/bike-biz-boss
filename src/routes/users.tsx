@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Pencil, Plus, Trash2, Users } from "lucide-react";
+import { Pencil, Plus, RotateCcw, Trash2, Users } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Chip, EmptyState, PageHeader } from "@/components/ui-kit";
 import { Field, SelectField } from "@/components/forms/fields";
@@ -44,6 +44,7 @@ function UsersPage() {
     fullName: "",
     username: "",
     phone: "",
+    password: "",
     role: "EMPLOYEE" as Role,
     title: "",
   });
@@ -59,14 +60,21 @@ function UsersPage() {
 
   function openNew() {
     setEditId(null);
-    setForm({ fullName: "", username: "", phone: "", role: "EMPLOYEE", title: "" });
+    setForm({ fullName: "", username: "", phone: "", password: "", role: "EMPLOYEE", title: "" });
     setOpen(true);
   }
 
   function openEdit(id: string) {
     const u = state.users.find((x) => x.id === id)!;
     setEditId(id);
-    setForm({ fullName: u.fullName, username: u.username, phone: u.phone, role: u.role, title: u.title });
+    setForm({
+      fullName: u.fullName,
+      username: u.username,
+      phone: u.phone,
+      password: "",
+      role: u.role,
+      title: u.title,
+    });
     setOpen(true);
   }
 
@@ -76,15 +84,49 @@ function UsersPage() {
       toast.error("نام و نام کاربری اجباری هستند.");
       return;
     }
+    const username = form.username.trim();
+    const duplicate = state.users.some(
+      (u) => u.username.toLowerCase() === username.toLowerCase() && u.id !== editId,
+    );
+    if (duplicate) {
+      toast.error("این نام کاربری قبلاً استفاده شده است.");
+      return;
+    }
+    if (!editId && form.password.trim().length < 4) {
+      toast.error("رمز عبور باید حداقل ۴ کاراکتر باشد.");
+      return;
+    }
+    if (editId && form.password.trim() && form.password.trim().length < 4) {
+      toast.error("رمز عبور جدید باید حداقل ۴ کاراکتر باشد.");
+      return;
+    }
     setState((s) => ({
       ...s,
       users: editId
-        ? s.users.map((u) => (u.id === editId ? { ...u, ...form } : u))
+        ? s.users.map((u) =>
+            u.id === editId
+              ? {
+                  ...u,
+                  fullName: form.fullName.trim(),
+                  username,
+                  phone: form.phone.trim(),
+                  title: form.title.trim(),
+                  role: form.role,
+                  isWorker: form.role === "MECHANIC",
+                  ...(form.password.trim() ? { password: form.password.trim() } : {}),
+                }
+              : u,
+          )
         : [
             ...s.users,
             {
               id: uid("u"),
-              ...form,
+              fullName: form.fullName.trim(),
+              username,
+              phone: form.phone.trim(),
+              password: form.password.trim(),
+              title: form.title.trim(),
+              role: form.role,
               isActive: true,
               isWorker: form.role === "MECHANIC",
             },
@@ -93,6 +135,7 @@ function UsersPage() {
     setOpen(false);
     toast.success(editId ? "کاربر ویرایش شد" : "کاربر جدید افزوده شد");
   }
+
 
   return (
     <>
@@ -148,14 +191,32 @@ function UsersPage() {
                 >
                   <Pencil className="size-5" />
                 </button>
-                <button
-                  onClick={() => setDeleteId(u.id)}
-                  aria-label={`غیرفعال‌سازی ${u.fullName}`}
-                  className="grid size-10 place-items-center rounded-lg text-destructive hover:bg-destructive/10"
-                >
-                  <Trash2 className="size-5" />
-                </button>
+                {u.isActive ? (
+                  <button
+                    onClick={() => setDeleteId(u.id)}
+                    disabled={u.id === user?.id}
+                    aria-label={`غیرفعال‌سازی ${u.fullName}`}
+                    className="grid size-10 place-items-center rounded-lg text-destructive hover:bg-destructive/10 disabled:opacity-40"
+                  >
+                    <Trash2 className="size-5" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setState((s) => ({
+                        ...s,
+                        users: s.users.map((x) => (x.id === u.id ? { ...x, isActive: true } : x)),
+                      }));
+                      toast.success("کاربر فعال شد");
+                    }}
+                    aria-label={`فعال‌سازی ${u.fullName}`}
+                    className="grid size-10 place-items-center rounded-lg text-primary hover:bg-accent"
+                  >
+                    <RotateCcw className="size-5" />
+                  </button>
+                )}
               </div>
+
             </div>
           </li>
         ))}
@@ -206,6 +267,16 @@ function UsersPage() {
                 label: ROLE_LABEL[r],
               }))}
             />
+            <Field
+              id="password"
+              label={editId ? "رمز عبور جدید (اختیاری)" : "رمز عبور"}
+              required={!editId}
+              type="password"
+              value={form.password}
+              onChange={(v) => setForm({ ...form, password: v })}
+              placeholder={editId ? "برای تغییر رمز، وارد کنید" : "حداقل ۴ کاراکتر"}
+            />
+
             <button
               type="submit"
               className="min-h-13 w-full rounded-xl bg-primary py-3.5 font-extrabold text-primary-foreground"

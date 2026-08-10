@@ -14,11 +14,13 @@ export type User = {
   fullName: string;
   username: string;
   phone: string;
+  password: string;
   role: Role;
   isActive: boolean;
   isWorker: boolean;
   title: string;
 };
+
 
 export type Status =
   | "PENDING"
@@ -37,6 +39,11 @@ export const BIKE_TYPE_LABEL: Record<BikeType, string> = {
   SPORT: "اسپرت",
 };
 
+/** Standard wheel sizes offered in the purchase form (inches). */
+export const BIKE_SIZES = ["12", "16", "20", "24", "26", "27.5", "29"] as const;
+
+
+
 export type BicyclePurchase = {
   id: string;
   size: string;
@@ -53,23 +60,34 @@ export type BicyclePurchase = {
 };
 
 export type ExpenseCategory =
+  | "MISCELLANEOUS"
   | "SALARY"
   | "BONUS"
   | "PENALTY"
-  | "PERSONAL_WITHDRAWAL"
-  | "MISCELLANEOUS";
+  | "PERSONAL_WITHDRAWAL";
 
+/** Order matters: it drives the order of the pickers across the app. */
 export const EXPENSE_LABEL: Record<ExpenseCategory, string> = {
+  MISCELLANEOUS: "هزینه",
   SALARY: "حقوق",
   BONUS: "پاداش",
   PENALTY: "جریمه",
   PERSONAL_WITHDRAWAL: "برداشت شخصی",
-  MISCELLANEOUS: "هزینه متفرقه",
 };
+
+export const EXPENSE_ORDER: ExpenseCategory[] = [
+  "MISCELLANEOUS",
+  "SALARY",
+  "BONUS",
+  "PENALTY",
+  "PERSONAL_WITHDRAWAL",
+];
 
 export type Expense = {
   id: string;
   category: ExpenseCategory;
+  /** Free-text name, only for the generic "هزینه" category. */
+  name?: string;
   amount: number;
   date: string;
   description: string;
@@ -79,6 +97,13 @@ export type Expense = {
   reviewNote?: string;
   accountingRef?: string;
 };
+
+export function expenseTitle(e: Expense) {
+  return e.category === "MISCELLANEOUS"
+    ? e.name?.trim() || EXPENSE_LABEL.MISCELLANEOUS
+    : EXPENSE_LABEL[e.category];
+}
+
 
 export type Priority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 
@@ -165,6 +190,8 @@ export type PurchaseInvoice = {
 export type AppNotification = {
   id: string;
   userRole: Role[];
+  /** When set, only these users receive the notification. */
+  userIds?: string[];
   title: string;
   body: string;
   url: string;
@@ -172,11 +199,28 @@ export type AppNotification = {
   priority: "NORMAL" | "URGENT";
   isRead: boolean;
   createdAt: string;
+  /** ISO time the alarm should actually reach the user's phone. */
+  deliverAt: string;
+  delivered: boolean;
+};
+
+/** Quiet-hours style alarm window managed by the main admin. */
+export type AlarmSettings = {
+  enabled: boolean;
+  /** Alarms only ring between startHour:00 and endHour:00 (24h clock). */
+  startHour: number;
+  endHour: number;
+  /** Roles the window applies to; other roles get alarms instantly. */
+  roles: Role[];
+  vibrate: boolean;
+  sound: boolean;
 };
 
 export type State = {
   currentUserId: string | null;
   currency: "TOMAN" | "RIAL";
+  theme: "light" | "dark";
+  alarms: AlarmSettings;
   users: User[];
   purchases: BicyclePurchase[];
   expenses: Expense[];
@@ -185,301 +229,84 @@ export type State = {
   notifications: AppNotification[];
 };
 
-const now = Date.now();
-const ago = (h: number) => new Date(now - h * 3600_000).toISOString();
+export const DEFAULT_ALARMS: AlarmSettings = {
+  enabled: true,
+  startHour: 16,
+  endHour: 23,
+  roles: ["MECHANIC"],
+  vibrate: true,
+  sound: true,
+};
 
+/** The only account that ships with the app; every other user is created by the admin. */
 const users: User[] = [
   {
     id: "u1",
     fullName: "مدیر اصلی",
     username: "admin",
     phone: "09120000001",
+    password: "admin1234",
     role: "ADMIN",
     isActive: true,
     isWorker: false,
-    title: "مالک مجموعه",
-  },
-  {
-    id: "u2",
-    fullName: "علی احمدی",
-    username: "ali",
-    phone: "09120000002",
-    role: "STORE_MANAGER",
-    isActive: true,
-    isWorker: false,
-    title: "مدیر فروشگاه",
-  },
-  {
-    id: "u3",
-    fullName: "رضا کریمی",
-    username: "reza",
-    phone: "09120000003",
-    role: "EMPLOYEE",
-    isActive: true,
-    isWorker: false,
-    title: "فروشنده",
-  },
-  {
-    id: "u4",
-    fullName: "حسن محمدی",
-    username: "hasan",
-    phone: "09120000004",
-    role: "MECHANIC",
-    isActive: true,
-    isWorker: true,
-    title: "مکانیک ارشد",
-  },
-  {
-    id: "u5",
-    fullName: "سارا رضایی",
-    username: "sara",
-    phone: "09120000005",
-    role: "MECHANIC",
-    isActive: true,
-    isWorker: true,
-    title: "مکانیک",
+    title: "مدیر کل",
   },
 ];
 
 const initialState: State = {
   currentUserId: null,
   currency: "TOMAN",
+  theme: "light",
+  alarms: DEFAULT_ALARMS,
   users,
-  purchases: [
-    {
-      id: "b1",
-      size: "L (بزرگ)",
-      brand: "Specialized Rockhopper",
-      color: "سبز نظامی",
-      bikeType: "SPORT",
-      purchasePrice: 32_000_000,
-      description: "کوهستان ۲۹ اینچ، دنده شیمانو",
-      createdBy: "u3",
-      status: "APPROVED",
-      createdAt: ago(30),
-    },
-    {
-      id: "b2",
-      size: "M (متوسط)",
-      brand: "Giant Talon 2",
-      color: "آبی",
-      bikeType: "SPORT",
-      purchasePrice: 28_500_000,
-      description: "",
-      createdBy: "u3",
-      status: "PENDING",
-      createdAt: ago(6),
-    },
-    {
-      id: "b3",
-      size: "XL (بسیار بزرگ)",
-      brand: "Scott Scale 965",
-      color: "مشکی مات",
-      bikeType: "BOY",
-      purchasePrice: 55_000_000,
-      description: "بدنه کربن",
-      createdBy: "u2",
-      status: "SYNCED_TO_ACCOUNTING",
-      accountingRef: "ACC-1402-092",
-      createdAt: ago(72),
-    },
-  ],
-  expenses: [
-    {
-      id: "e1",
-      category: "SALARY",
-      amount: 5_000_000,
-      date: ago(50),
-      description: "حقوق پرسنل مهر ماه",
-      relatedUserId: "u4",
-      createdBy: "u2",
-      status: "APPROVED",
-    },
-    {
-      id: "e2",
-      category: "BONUS",
-      amount: 1_200_000,
-      date: ago(80),
-      description: "پاداش حسن بابت انجام کار",
-      relatedUserId: "u4",
-      createdBy: "u5",
-      status: "PENDING",
-    },
-    {
-      id: "e3",
-      category: "MISCELLANEOUS",
-      amount: 150_000,
-      date: ago(100),
-      description: "تنقلات کارگاه",
-      createdBy: "u1",
-      status: "APPROVED",
-    },
-    {
-      id: "e4",
-      category: "PERSONAL_WITHDRAWAL",
-      amount: 3_500_000,
-      date: ago(150),
-      description: "خرید ابزار جدید",
-      createdBy: "u1",
-      status: "PENDING",
-    },
-  ],
-  tasks: [
-    {
-      id: "t1",
-      workerId: "u4",
-      title: "سرویس کامل کوهستان جاینت",
-      description: "تنظیم دنده، روغن‌کاری زنجیر و بالانس چرخ",
-      priority: "HIGH",
-      dueDate: ago(-24),
-      wage: 350_000,
-      status: "IN_PROGRESS",
-      createdBy: "u2",
-      createdAt: ago(10),
-    },
-    {
-      id: "t2",
-      workerId: "u4",
-      title: "تعویض لنت ترمز دیسکی",
-      description: "لنت رزینی شیمانو",
-      priority: "MEDIUM",
-      dueDate: ago(-48),
-      wage: 120_000,
-      status: "PENDING",
-      createdBy: "u2",
-      createdAt: ago(8),
-    },
-    {
-      id: "t3",
-      workerId: "u4",
-      title: "هواگیری ترمز هیدرولیک",
-      description: "",
-      priority: "LOW",
-      dueDate: ago(24),
-      wage: 180_000,
-      status: "SUBMITTED",
-      createdBy: "u2",
-      completedNote: "هواگیری انجام شد و تست گرفته شد.",
-      createdAt: ago(40),
-    },
-    {
-      id: "t4",
-      workerId: "u5",
-      title: "تعویض طوقه چرخ جلو",
-      description: "",
-      priority: "MEDIUM",
-      wage: 250_000,
-      finalWage: 250_000,
-      status: "APPROVED",
-      createdBy: "u2",
-      createdAt: ago(90),
-    },
-  ],
-  invoices: [
-    {
-      id: "i1",
-      invoiceNumber: "INV-2023-085",
-      supplier: "شرکت قطعات شیمانو ایران",
-      date: ago(30),
-      status: "PURCHASED",
-      notes: "",
-      createdBy: "u2",
-      items: [
-        {
-          id: "i1a",
-          productName: "لاستیک کوهستان ۲۹ اینچ",
-          probableQty: 20,
-          probableUnitPrice: 1_200_000,
-        },
-        { id: "i1b", productName: "زنجیر ۱۰ سرعته", probableQty: 15, probableUnitPrice: 850_000 },
-      ],
-    },
-    {
-      id: "i2",
-      invoiceNumber: "INV-2023-086",
-      supplier: "لوازم یدکی کوهستان",
-      date: ago(20),
-      status: "PRE_INVOICE",
-      notes: "منتظر تأیید قیمت",
-      createdBy: "u2",
-      items: [
-        { id: "i2a", productName: "ترمز دیسکی هیدرولیک", probableQty: 8, probableUnitPrice: 1_600_000 },
-      ],
-    },
-    {
-      id: "i3",
-      invoiceNumber: "INV-2023-084",
-      supplier: "واردات دوچرخه جاینت",
-      date: ago(120),
-      status: "FINALIZED",
-      notes: "تحویل در انبار مرکزی",
-      createdBy: "u2",
-      items: [
-        {
-          id: "i3a",
-          productName: "لاستیک کوهستان ۲۹ اینچ (۲۰ عدد)",
-          probableQty: 20,
-          probableUnitPrice: 1_200_000,
-          finalQty: 20,
-          finalUnitPrice: 1_250_000,
-        },
-        {
-          id: "i3b",
-          productName: "زنجیر ۱۰ سرعته شیمانو (۱۵ عدد)",
-          probableQty: 15,
-          probableUnitPrice: 850_000,
-          finalQty: 15,
-          finalUnitPrice: 800_000,
-        },
-      ],
-    },
-  ],
-  notifications: [
-    {
-      id: "n1",
-      userRole: ["ADMIN", "STORE_MANAGER"],
-      title: "ثبت خرید جدید",
-      body: "سفارش قطعات شیمانو با موفقیت ثبت شد و در حال پردازش است.",
-      url: "/purchase-invoices",
-      type: "invoice",
-      priority: "NORMAL",
-      isRead: false,
-      createdAt: ago(2),
-    },
-    {
-      id: "n2",
-      userRole: ["ADMIN", "STORE_MANAGER", "MECHANIC"],
-      title: "تعمیر دوچرخه کوهستان",
-      body: "وظیفه سرویس دوره‌ای توسط علی محمدی انجام شد.",
-      url: "/tasks",
-      type: "task",
-      priority: "NORMAL",
-      isRead: false,
-      createdAt: ago(5),
-    },
-    {
-      id: "n3",
-      userRole: ["ADMIN"],
-      title: "دریافت هزینه فاکتور",
-      body: "مبلغ ۲,۵۰۰,۰۰۰ تومان برای فاکتور #۱۰۴۲ واریز شد.",
-      url: "/expenses",
-      type: "expense",
-      priority: "NORMAL",
-      isRead: true,
-      createdAt: ago(28),
-    },
-  ],
+  purchases: [],
+  expenses: [],
+  tasks: [],
+  invoices: [],
+  notifications: [],
 };
 
-const KEY = "veloflow-state-v1";
+
+const KEY = "dar-rekab-state-v2";
+
+export type NotifyInput = Omit<
+  AppNotification,
+  "id" | "isRead" | "createdAt" | "deliverAt" | "delivered"
+>;
+
+/** Does this notification belong to the given user? */
+export function isForUser(n: AppNotification, u: User) {
+  return n.userIds?.length ? n.userIds.includes(u.id) : n.userRole.includes(u.role);
+}
+
+/** Next moment the alarm may ring, honouring the admin's alarm window. */
+export function computeDeliverAt(alarms: AlarmSettings, roles: Role[], from = new Date()): Date {
+  if (!alarms.enabled) return from;
+  const affected = roles.some((r) => alarms.roles.includes(r));
+  if (!affected) return from;
+  const start = alarms.startHour;
+  const end = alarms.endHour;
+  const h = from.getHours();
+  const inWindow = start <= end ? h >= start && h < end : h >= start || h < end;
+  if (inWindow) return from;
+  const next = new Date(from);
+  next.setMinutes(0, 0, 0);
+  if (h < start) next.setHours(start);
+  else {
+    next.setDate(next.getDate() + 1);
+    next.setHours(start);
+  }
+  return next;
+}
 
 type Ctx = {
   state: State;
   setState: (updater: (s: State) => State) => void;
   user: User | null;
-  login: (username: string) => boolean;
+  login: (identifier: string, password: string) => boolean;
   logout: () => void;
-  notify: (n: Omit<AppNotification, "id" | "isRead" | "createdAt">) => void;
+  notify: (n: NotifyInput) => void;
+  setTheme: (t: "light" | "dark") => void;
 };
 
 const StoreContext = createContext<Ctx | null>(null);
@@ -491,7 +318,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const saved = localStorage.getItem(KEY);
-      if (saved) setRaw({ ...initialState, ...(JSON.parse(saved) as State) });
+      if (saved) {
+        const parsed = JSON.parse(saved) as Partial<State>;
+        setRaw({
+          ...initialState,
+          ...parsed,
+          alarms: { ...DEFAULT_ALARMS, ...(parsed.alarms ?? {}) },
+          users: parsed.users?.length ? parsed.users : initialState.users,
+        });
+      }
     } catch {
       /* ignore corrupted storage */
     }
@@ -502,32 +337,97 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (hydrated) localStorage.setItem(KEY, JSON.stringify(state));
   }, [state, hydrated]);
 
+  // Theme
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle("dark", state.theme === "dark");
+    root.style.colorScheme = state.theme;
+  }, [state.theme]);
+
+  // Alarm delivery loop: queued alarms fire once their window opens.
+  const currentUser = state.users.find((u) => u.id === state.currentUserId) ?? null;
+  useEffect(() => {
+    if (!hydrated) return;
+    const tick = () => {
+      const due = state.notifications.filter(
+        (n) => !n.delivered && new Date(n.deliverAt).getTime() <= Date.now(),
+      );
+      if (!due.length) return;
+      setRaw((s) => ({
+        ...s,
+        notifications: s.notifications.map((n) =>
+          due.some((d) => d.id === n.id) ? { ...n, delivered: true } : n,
+        ),
+      }));
+      if (!currentUser) return;
+      const mine = due.filter((n) => isForUser(n, currentUser));
+      if (!mine.length) return;
+      if (state.alarms.vibrate && typeof navigator !== "undefined" && "vibrate" in navigator) {
+        navigator.vibrate?.([220, 120, 220]);
+      }
+      if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+        for (const n of mine) {
+          try {
+            new Notification(n.title, { body: n.body, tag: n.id });
+          } catch {
+            /* notification not available */
+          }
+        }
+      }
+    };
+    tick();
+    const id = window.setInterval(tick, 20_000);
+    return () => window.clearInterval(id);
+  }, [hydrated, state.notifications, state.alarms, currentUser]);
+
   const value = useMemo<Ctx>(() => {
     const setState = (updater: (s: State) => State) => setRaw((s) => updater(s));
     return {
       state,
       setState,
       user: state.users.find((u) => u.id === state.currentUserId) ?? null,
-      login: (username: string) => {
-        const found = state.users.find((u) => u.username === username.trim() && u.isActive);
+      login: (identifier: string, password: string) => {
+        const id = identifier.trim().toLowerCase();
+        const found = state.users.find(
+          (u) =>
+            u.isActive &&
+            (u.username.toLowerCase() === id || u.phone === identifier.trim()) &&
+            u.password === password,
+        );
         if (!found) return false;
         setRaw((s) => ({ ...s, currentUserId: found.id }));
         return true;
       },
       logout: () => setRaw((s) => ({ ...s, currentUserId: null })),
+      setTheme: (t) => setRaw((s) => ({ ...s, theme: t })),
       notify: (n) =>
-        setRaw((s) => ({
-          ...s,
-          notifications: [
-            { ...n, id: `n${Date.now()}`, isRead: false, createdAt: new Date().toISOString() },
-            ...s.notifications,
-          ],
-        })),
+        setRaw((s) => {
+          const roles = n.userIds?.length
+            ? s.users.filter((u) => n.userIds!.includes(u.id)).map((u) => u.role)
+            : n.userRole;
+          const deliverAt =
+            n.priority === "URGENT" ? new Date() : computeDeliverAt(s.alarms, roles, new Date());
+          return {
+            ...s,
+            notifications: [
+              {
+                ...n,
+                id: uid("n"),
+                isRead: false,
+                createdAt: new Date().toISOString(),
+                deliverAt: deliverAt.toISOString(),
+                delivered: deliverAt.getTime() <= Date.now(),
+              },
+              ...s.notifications,
+            ],
+          };
+        }),
     };
   }, [state]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }
+
 
 export function useStore() {
   const ctx = useContext(StoreContext);

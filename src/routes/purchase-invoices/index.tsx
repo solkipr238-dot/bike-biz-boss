@@ -4,7 +4,7 @@ import { Receipt, Search, Package, Bike } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Chip, EmptyState, FilterChips, ListSkeleton, PageHeader } from "@/components/ui-kit";
 import { INVOICE_STATUS_LABEL, useStore, type InvoiceStatus } from "@/lib/store";
-import { faDate, money } from "@/lib/format";
+import { faDateTime, money } from "@/lib/format";
 import { useFakeLoading } from "@/hooks/use-fake-loading";
 
 export const Route = createFileRoute("/purchase-invoices/")({
@@ -127,7 +127,7 @@ function InvoicesPage() {
                     <div className="mt-4 flex items-end justify-between border-t pt-3">
                       <div>
                         <p className="text-xs text-muted-foreground">تاریخ ثبت</p>
-                        <p className="num text-sm font-bold">{faDate(inv.date)}</p>
+                        <p className="num text-sm font-bold">{faDateTime(inv.date)}</p>
                       </div>
                       <div className="text-end">
                         <p className="text-xs text-muted-foreground">مبلغ کل</p>
