@@ -104,9 +104,18 @@ function InventoryPage() {
     e.preventDefault();
     const bike = repairFor;
     if (!bike || !user) return;
-    if (!form.workerId) return toast.error("یک تعمیرکار انتخاب کنید.");
-    if (!form.title.trim()) return toast.error("عنوان کار را وارد کنید.");
-    if (form.wage <= 0) return toast.error("دستمزد را وارد کنید.");
+    if (!form.workerId) {
+      toast.error("یک تعمیرکار انتخاب کنید.");
+      return;
+    }
+    if (!form.title.trim()) {
+      toast.error("عنوان کار را وارد کنید.");
+      return;
+    }
+    if (form.wage <= 0) {
+      toast.error("دستمزد را وارد کنید.");
+      return;
+    }
     const taskId = uid("t");
     setState((s) => ({
       ...s,
