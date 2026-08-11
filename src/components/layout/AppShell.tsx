@@ -6,6 +6,7 @@ import {
   ShoppingCart,
   Banknote,
   ClipboardList,
+  Boxes,
   Users,
   Settings,
   FileSpreadsheet,
@@ -24,6 +25,7 @@ type NavItem = { to: string; label: string; icon: typeof Home; key: string };
 const ALL_NAV: NavItem[] = [
   { to: "/dashboard", label: "خانه", icon: Home, key: "dashboard" },
   { to: "/bicycle-purchases", label: "خریدها", icon: ShoppingCart, key: "purchases" },
+  { to: "/inventory", label: "انبار", icon: Boxes, key: "inventory" },
   { to: "/expenses", label: "هزینه‌ها", icon: Banknote, key: "expenses" },
   { to: "/tasks", label: "وظایف", icon: ClipboardList, key: "tasks" },
   { to: "/notifications", label: "اعلان‌ها", icon: Bell, key: "notifications" },

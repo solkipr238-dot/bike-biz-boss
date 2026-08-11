@@ -76,7 +76,7 @@ function LoginPage() {
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="admin"
+                placeholder="نام کاربری"
                 autoComplete="username"
                 className="h-12 w-full bg-transparent text-sm outline-none"
               />
