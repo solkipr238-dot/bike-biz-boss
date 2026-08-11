@@ -6,6 +6,7 @@ import {
   ShoppingCart,
   Banknote,
   ClipboardList,
+  Boxes,
   Users,
   Settings,
   FileSpreadsheet,
@@ -14,7 +15,7 @@ import {
   LogOut,
   Bike,
 } from "lucide-react";
-import { can, ROLE_LABEL, useStore, type Role } from "@/lib/store";
+import { can, isForUser, ROLE_LABEL, useStore, type Role } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -24,6 +25,7 @@ type NavItem = { to: string; label: string; icon: typeof Home; key: string };
 const ALL_NAV: NavItem[] = [
   { to: "/dashboard", label: "خانه", icon: Home, key: "dashboard" },
   { to: "/bicycle-purchases", label: "خریدها", icon: ShoppingCart, key: "purchases" },
+  { to: "/inventory", label: "انبار", icon: Boxes, key: "inventory" },
   { to: "/expenses", label: "هزینه‌ها", icon: Banknote, key: "expenses" },
   { to: "/tasks", label: "وظایف", icon: ClipboardList, key: "tasks" },
   { to: "/notifications", label: "اعلان‌ها", icon: Bell, key: "notifications" },
@@ -71,7 +73,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const mobileNav = navFor(user.role);
   const sideNav = [...navFor(user.role), ...DESKTOP_EXTRA.filter((n) => can(user.role, n.key))];
   const unread = state.notifications.filter(
-    (n) => !n.isRead && n.userRole.includes(user.role),
+    (n) => !n.isRead && isForUser(n, user),
   ).length;
 
   const showFab = user.role !== "MECHANIC";

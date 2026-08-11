@@ -12,7 +12,14 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { EmptyState, PageHeader } from "@/components/ui-kit";
-import { ROLE_LABEL, can, useStore, type AlarmSettings, type Role } from "@/lib/store";
+import {
+  ROLE_LABEL,
+  buildVibratePattern,
+  can,
+  useStore,
+  type AlarmSettings,
+  type Role,
+} from "@/lib/store";
 import { toFa } from "@/lib/format";
 import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
@@ -36,10 +43,18 @@ export const Route = createFileRoute("/settings")({
 });
 
 function SettingsPage() {
-  const { state, setState, user, logout, setTheme } = useStore();
+  const { state, setState, user, logout, setTheme, notify } = useStore();
   const navigate = useNavigate();
   const [push, setPush] = useState(false);
   const [emailAlerts, setEmailAlerts] = useState(true);
+  const [alarmMsg, setAlarmMsg] = useState({
+    userIds: [] as string[],
+    title: "",
+    body: "",
+    urgent: false,
+    pulses: 3,
+    duration: 500,
+  });
   const [mapping, setMapping] = useState({ date: "تاریخ", amount: "مبلغ", ref: "شماره سند" });
 
   if (!user) return null;
@@ -194,6 +209,56 @@ function SettingsPage() {
             <span className="text-sm font-bold">ویبره هنگام دریافت آلارم</span>
             <Switch checked={alarms.vibrate} onCheckedChange={(v) => updateAlarms({ vibrate: v })} />
           </label>
+          <div className="grid grid-cols-2 gap-3 border-t py-3">
+            <div className="space-y-2">
+              <label htmlFor="alarm-pulses" className="block text-sm font-bold">
+                تعداد ویبره هر آلارم
+              </label>
+              <select
+                id="alarm-pulses"
+                value={alarms.vibratePulses}
+                onChange={(e) => updateAlarms({ vibratePulses: Number(e.target.value) })}
+                className="h-12 w-full rounded-xl border bg-card px-3 text-sm font-bold outline-none focus:ring-2 focus:ring-ring"
+              >
+                {[1, 2, 3, 4, 5, 6, 8, 10].map((n) => (
+                  <option key={n} value={n}>
+                    {toFa(n)} بار
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="alarm-duration" className="block text-sm font-bold">
+                شدت / طول هر ویبره
+              </label>
+              <select
+                id="alarm-duration"
+                value={alarms.vibrateDuration}
+                onChange={(e) => updateAlarms({ vibrateDuration: Number(e.target.value) })}
+                className="h-12 w-full rounded-xl border bg-card px-3 text-sm font-bold outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value={250}>سبک</option>
+                <option value={500}>متوسط</option>
+                <option value={900}>سنگین</option>
+                <option value={1500}>خیلی سنگین</option>
+              </select>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              const pattern = buildVibratePattern(alarms.vibratePulses, alarms.vibrateDuration);
+              if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+                navigator.vibrate?.(pattern);
+                toast.success("ویبره آزمایشی اجرا شد");
+              } else {
+                toast.error("این دستگاه از ویبره پشتیبانی نمی‌کند.");
+              }
+            }}
+            className="mb-1 h-12 w-full rounded-xl bg-secondary text-sm font-bold"
+          >
+            تست ویبره
+          </button>
           <label className="flex items-center justify-between gap-3 border-t py-3">
             <span className="text-sm font-bold">صدای آلارم</span>
             <Switch checked={alarms.sound} onCheckedChange={(v) => updateAlarms({ sound: v })} />
@@ -201,6 +266,149 @@ function SettingsPage() {
         </section>
       ) : null}
 
+      {isAdmin ? (
+        <section className="app-card mb-4 p-4 sm:p-6">
+          <h2 className="mb-1 flex items-center gap-2 font-extrabold">
+            <AlarmClock className="size-5 text-primary" /> ارسال آلارم دستی
+          </h2>
+          <p className="mb-4 text-xs leading-6 text-muted-foreground">
+            یک پیام با ویبره‌ی دلخواه برای کاربران انتخاب‌شده بفرستید. آلارم فوری بلافاصله و آلارم
+            عادی در ابتدای بازهٔ مجاز ارسال می‌شود.
+          </p>
+
+          <span className="mb-2 block text-sm font-bold">گیرندگان</span>
+          <div className="mb-3 flex flex-wrap gap-2">
+            {state.users
+              .filter((u) => u.isActive && u.id !== user.id)
+              .map((u) => {
+                const active = alarmMsg.userIds.includes(u.id);
+                return (
+                  <button
+                    key={u.id}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() =>
+                      setAlarmMsg((m) => ({
+                        ...m,
+                        userIds: active
+                          ? m.userIds.filter((x) => x !== u.id)
+                          : [...m.userIds, u.id],
+                      }))
+                    }
+                    className={`rounded-full px-4 py-2 text-sm font-bold ${
+                      active
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-secondary-foreground"
+                    }`}
+                  >
+                    {u.fullName}
+                  </button>
+                );
+              })}
+          </div>
+          {state.users.filter((u) => u.isActive && u.id !== user.id).length === 0 ? (
+            <p className="mb-3 text-xs font-bold text-muted-foreground">
+              هنوز کاربری ساخته نشده است.
+            </p>
+          ) : null}
+
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <label htmlFor="alarm-title" className="block text-sm font-bold">
+                عنوان آلارم
+              </label>
+              <input
+                id="alarm-title"
+                value={alarmMsg.title}
+                onChange={(e) => setAlarmMsg((m) => ({ ...m, title: e.target.value }))}
+                className="h-12 w-full rounded-xl border bg-card px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="alarm-body" className="block text-sm font-bold">
+                متن پیام
+              </label>
+              <textarea
+                id="alarm-body"
+                rows={3}
+                value={alarmMsg.body}
+                onChange={(e) => setAlarmMsg((m) => ({ ...m, body: e.target.value }))}
+                className="w-full rounded-xl border bg-card p-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <label htmlFor="msg-pulses" className="block text-sm font-bold">
+                  تعداد ویبره
+                </label>
+                <select
+                  id="msg-pulses"
+                  value={alarmMsg.pulses}
+                  onChange={(e) => setAlarmMsg((m) => ({ ...m, pulses: Number(e.target.value) }))}
+                  className="h-12 w-full rounded-xl border bg-card px-3 text-sm font-bold outline-none focus:ring-2 focus:ring-ring"
+                >
+                  {[1, 2, 3, 4, 5, 6, 8, 10].map((n) => (
+                    <option key={n} value={n}>
+                      {toFa(n)} بار
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="msg-duration" className="block text-sm font-bold">
+                  شدت ویبره
+                </label>
+                <select
+                  id="msg-duration"
+                  value={alarmMsg.duration}
+                  onChange={(e) => setAlarmMsg((m) => ({ ...m, duration: Number(e.target.value) }))}
+                  className="h-12 w-full rounded-xl border bg-card px-3 text-sm font-bold outline-none focus:ring-2 focus:ring-ring"
+                >
+                  <option value={250}>سبک</option>
+                  <option value={500}>متوسط</option>
+                  <option value={900}>سنگین</option>
+                  <option value={1500}>خیلی سنگین</option>
+                </select>
+              </div>
+            </div>
+            <label className="flex items-center justify-between gap-3 py-1">
+              <span className="text-sm font-bold">ارسال فوری (بدون رعایت بازهٔ آلارم)</span>
+              <Switch
+                checked={alarmMsg.urgent}
+                onCheckedChange={(v) => setAlarmMsg((m) => ({ ...m, urgent: v }))}
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => {
+                if (!alarmMsg.userIds.length) {
+                  toast.error("حداقل یک گیرنده انتخاب کنید.");
+                  return;
+                }
+                if (!alarmMsg.title.trim() || !alarmMsg.body.trim()) {
+                  toast.error("عنوان و متن پیام را وارد کنید.");
+                  return;
+                }
+                notify({
+                  userRole: [],
+                  userIds: alarmMsg.userIds,
+                  title: alarmMsg.title.trim(),
+                  body: alarmMsg.body.trim(),
+                  url: "/notifications",
+                  type: "task",
+                  priority: alarmMsg.urgent ? "URGENT" : "NORMAL",
+                  vibratePattern: buildVibratePattern(alarmMsg.pulses, alarmMsg.duration),
+                });
+                setAlarmMsg((m) => ({ ...m, title: "", body: "", userIds: [] }));
+                toast.success("آلارم ثبت شد");
+              }}
+              className="h-14 w-full rounded-xl bg-primary text-base font-extrabold text-primary-foreground"
+            >
+              ارسال آلارم
+            </button>
+          </div>
+        </section>
+      ) : null}
 
       {isAdmin ? (
         <>

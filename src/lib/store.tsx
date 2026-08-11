@@ -57,6 +57,8 @@ export type BicyclePurchase = {
   reviewNote?: string;
   accountingRef?: string;
   createdAt: string;
+  /** Set once the bike has been handed to a mechanic for repair. */
+  repairTaskId?: string;
 };
 
 export type ExpenseCategory =
@@ -136,6 +138,8 @@ export const TASK_STATUS_LABEL: Record<TaskStatus, string> = {
 export type Task = {
   id: string;
   workerId: string;
+  /** Bicycle (purchase) this repair task belongs to, when created from inventory. */
+  bikeId?: string;
   title: string;
   description: string;
   priority: Priority;
@@ -199,6 +203,8 @@ export type AppNotification = {
   priority: "NORMAL" | "URGENT";
   isRead: boolean;
   createdAt: string;
+  /** Vibration pattern in ms (vibrate/pause pairs). Falls back to alarm settings. */
+  vibratePattern?: number[];
   /** ISO time the alarm should actually reach the user's phone. */
   deliverAt: string;
   delivered: boolean;
@@ -214,7 +220,18 @@ export type AlarmSettings = {
   roles: Role[];
   vibrate: boolean;
   sound: boolean;
+  /** How many vibration pulses a normal alarm plays. */
+  vibratePulses: number;
+  /** Length of every pulse in milliseconds (heavier = longer). */
+  vibrateDuration: number;
 };
+
+/** Builds a vibrate/pause pattern from a pulse count and pulse length. */
+export function buildVibratePattern(pulses: number, duration: number): number[] {
+  const p = Math.max(1, Math.min(10, Math.round(pulses)));
+  const d = Math.max(100, Math.min(2000, Math.round(duration)));
+  return Array.from({ length: p * 2 - 1 }, (_, i) => (i % 2 === 0 ? d : 150));
+}
 
 export type State = {
   currentUserId: string | null;
@@ -236,16 +253,18 @@ export const DEFAULT_ALARMS: AlarmSettings = {
   roles: ["MECHANIC"],
   vibrate: true,
   sound: true,
+  vibratePulses: 3,
+  vibrateDuration: 500,
 };
 
 /** The only account that ships with the app; every other user is created by the admin. */
 const users: User[] = [
   {
     id: "u1",
-    fullName: "مدیر اصلی",
-    username: "admin",
+    fullName: "مهدی",
+    username: "mehdi",
     phone: "09120000001",
-    password: "admin1234",
+    password: "1400",
     role: "ADMIN",
     isActive: true,
     isWorker: false,
@@ -324,7 +343,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           ...initialState,
           ...parsed,
           alarms: { ...DEFAULT_ALARMS, ...(parsed.alarms ?? {}) },
-          users: parsed.users?.length ? parsed.users : initialState.users,
+          users: (parsed.users?.length ? parsed.users : initialState.users).map((u) =>
+            u.role === "ADMIN" && u.username === "admin"
+              ? { ...u, username: "mehdi", password: "1400", fullName: "مهدی" }
+              : u,
+          ),
         });
       }
     } catch {
@@ -363,12 +386,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const mine = due.filter((n) => isForUser(n, currentUser));
       if (!mine.length) return;
       if (state.alarms.vibrate && typeof navigator !== "undefined" && "vibrate" in navigator) {
-        navigator.vibrate?.([220, 120, 220]);
+        const pattern =
+          mine.find((n) => n.vibratePattern?.length)?.vibratePattern ??
+          buildVibratePattern(state.alarms.vibratePulses, state.alarms.vibrateDuration);
+        navigator.vibrate?.(pattern);
       }
       if (typeof Notification !== "undefined" && Notification.permission === "granted") {
         for (const n of mine) {
           try {
-            new Notification(n.title, { body: n.body, tag: n.id });
+            new Notification(n.title, {
+              body: n.body,
+              tag: n.id,
+              ...(n.vibratePattern ? { vibrate: n.vibratePattern } : {}),
+            } as NotificationOptions);
           } catch {
             /* notification not available */
           }
@@ -443,6 +473,7 @@ export function uid(prefix: string) {
 export const CAN: Record<string, Role[]> = {
   dashboard: ["ADMIN", "STORE_MANAGER", "EMPLOYEE"],
   purchases: ["ADMIN", "STORE_MANAGER", "EMPLOYEE"],
+  inventory: ["ADMIN", "STORE_MANAGER", "EMPLOYEE"],
   expenses: ["ADMIN", "STORE_MANAGER", "EMPLOYEE"],
   tasks: ["ADMIN", "STORE_MANAGER", "EMPLOYEE", "MECHANIC"],
   invoices: ["ADMIN", "STORE_MANAGER"],

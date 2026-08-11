@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ExportsRouteImport } from './routes/exports'
+import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as UsersRouteImport } from './routes/users'
@@ -39,6 +40,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const ExportsRoute = ExportsRouteImport.update({
   id: '/exports',
   path: '/exports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InventoryRoute = InventoryRouteImport.update({
+  id: '/inventory',
+  path: '/inventory',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NotificationsRoute = NotificationsRouteImport.update({
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/exports': typeof ExportsRoute
+  '/inventory': typeof InventoryRoute
   '/notifications': typeof NotificationsRoute
   '/settings': typeof SettingsRoute
   '/users': typeof UsersRoute
@@ -129,6 +136,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/exports': typeof ExportsRoute
+  '/inventory': typeof InventoryRoute
   '/notifications': typeof NotificationsRoute
   '/settings': typeof SettingsRoute
   '/users': typeof UsersRoute
@@ -148,6 +156,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/exports': typeof ExportsRoute
+  '/inventory': typeof InventoryRoute
   '/notifications': typeof NotificationsRoute
   '/settings': typeof SettingsRoute
   '/users': typeof UsersRoute
@@ -168,6 +177,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/exports'
+    | '/inventory'
     | '/notifications'
     | '/settings'
     | '/users'
@@ -186,6 +196,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/exports'
+    | '/inventory'
     | '/notifications'
     | '/settings'
     | '/users'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/exports'
+    | '/inventory'
     | '/notifications'
     | '/settings'
     | '/users'
@@ -223,6 +235,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
   ExportsRoute: typeof ExportsRoute
+  InventoryRoute: typeof InventoryRoute
   NotificationsRoute: typeof NotificationsRoute
   SettingsRoute: typeof SettingsRoute
   UsersRoute: typeof UsersRoute
@@ -259,6 +272,13 @@ declare module '@tanstack/react-router' {
       path: '/exports'
       fullPath: '/exports'
       preLoaderRoute: typeof ExportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inventory': {
+      id: '/inventory'
+      path: '/inventory'
+      fullPath: '/inventory'
+      preLoaderRoute: typeof InventoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/notifications': {
@@ -359,6 +379,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
   ExportsRoute: ExportsRoute,
+  InventoryRoute: InventoryRoute,
   NotificationsRoute: NotificationsRoute,
   SettingsRoute: SettingsRoute,
   UsersRoute: UsersRoute,
