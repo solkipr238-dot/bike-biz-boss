@@ -19,7 +19,10 @@ export type User = {
   isActive: boolean;
   isWorker: boolean;
   title: string;
+  /** Manual per-user access overrides set by the main admin (key -> allowed). */
+  permissions?: Record<string, boolean>;
 };
+
 
 
 export type Status =
