@@ -28,11 +28,12 @@ export function inRange(iso: string, range: Range) {
 }
 
 export const Route = createFileRoute("/expenses/")({
-  validateSearch: (s: Record<string, unknown>): { range?: Range } => ({
+  validateSearch: (s: Record<string, unknown>): { range: Range } => ({
     range: (["TODAY", "WEEK", "MONTH", "YEAR", "ALL"] as const).includes(s['range'] as Range)
       ? (s['range'] as Range)
-      : undefined,
+      : "ALL",
   }),
+
   head: () => ({
     meta: [
       { title: "مدیریت هزینه‌ها | مدیریت تعمیرگاه" },
