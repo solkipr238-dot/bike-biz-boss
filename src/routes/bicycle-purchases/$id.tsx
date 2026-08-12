@@ -142,7 +142,7 @@ function PurchaseDetail() {
         {item.accountingRef ? <InfoRow label="شماره سند">{item.accountingRef}</InfoRow> : null}
       </div>
 
-      {can(user.role, "approve") && item.status === "PENDING" ? (
+      {can(user, "approve") && item.status === "PENDING" ? (
         <div className="mt-4 flex gap-3">
           <button
             onClick={approve}
@@ -159,7 +159,7 @@ function PurchaseDetail() {
         </div>
       ) : null}
 
-      {can(user.role, "syncAccounting") && item.status === "APPROVED" ? (
+      {can(user, "syncAccounting") && item.status === "APPROVED" ? (
         <div className="app-card mt-4 space-y-3 p-4">
           <h3 className="flex items-center gap-2 font-bold">
             <FileCheck2 className="size-5 text-primary" /> ثبت در حسابداری

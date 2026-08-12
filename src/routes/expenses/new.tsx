@@ -41,7 +41,7 @@ function NewExpense() {
   const [nameError, setNameError] = useState("");
 
   const allowedCats = (Object.keys(EXPENSE_LABEL) as ExpenseCategory[]).filter(
-    (c) => c !== "PERSONAL_WITHDRAWAL" || can(user?.role, "personalWithdrawal"),
+    (c) => c !== "PERSONAL_WITHDRAWAL" || can(user, "personalWithdrawal"),
   );
 
   function submit(e: React.FormEvent) {

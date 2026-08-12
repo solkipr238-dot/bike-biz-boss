@@ -44,7 +44,7 @@ function TaskDetail() {
 
   const worker = state.users.find((u) => u.id === task.workerId);
   const isOwner = task.workerId === user.id;
-  const isManager = can(user.role, "approve");
+  const isManager = can(user, "approve");
 
   function patch(p: Partial<typeof task>) {
     setState((s) => ({ ...s, tasks: s.tasks.map((t) => (t.id === id ? { ...t, ...p } : t)) }));

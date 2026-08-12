@@ -71,7 +71,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   const mobileNav = navFor(user.role);
-  const sideNav = [...navFor(user.role), ...DESKTOP_EXTRA.filter((n) => can(user.role, n.key))];
+  const sideNav = [...navFor(user.role), ...DESKTOP_EXTRA.filter((n) => can(user, n.key))];
   const unread = state.notifications.filter(
     (n) => !n.isRead && isForUser(n, user),
   ).length;
@@ -81,9 +81,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const fabActions: { label: string; onClick: () => void }[] = [];
   if (user.role !== "MECHANIC")
     fabActions.push({ label: "ثبت خرید دوچرخه", onClick: () => go("/bicycle-purchases/new") });
-  if (can(user.role, "invoices"))
+  if (can(user, "invoices"))
     fabActions.push({ label: "ثبت پیش‌فاکتور خرید", onClick: () => go("/purchase-invoices/new") });
-  if (can(user.role, "approve"))
+  if (can(user, "approve"))
     fabActions.push({ label: "ثبت وظیفه جدید", onClick: () => go("/tasks?new=1") });
 
   function go(to: string) {
@@ -193,7 +193,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     ["SALARY", "حقوق"],
                     ["BONUS", "پاداش"],
                     ["PENALTY", "جریمه"],
-                    ...(can(user.role, "personalWithdrawal")
+                    ...(can(user, "personalWithdrawal")
                       ? [["PERSONAL_WITHDRAWAL", "برداشت شخصی"]]
                       : []),
                     ["MISCELLANEOUS", "هزینه متفرقه"],

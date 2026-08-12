@@ -49,7 +49,7 @@ function InvoiceDetail() {
       />
     );
 
-  const editable = can(user.role, "invoices") && inv.status !== "SYNCED_TO_ACCOUNTING";
+  const editable = can(user, "invoices") && inv.status !== "SYNCED_TO_ACCOUNTING";
   const totalProbable = inv.items.reduce((s, i) => s + i.probableQty * i.probableUnitPrice, 0);
   const totalFinal = inv.items.reduce(
     (s, i) => s + (i.finalQty ?? i.probableQty) * (i.finalUnitPrice ?? i.probableUnitPrice),
@@ -219,7 +219,7 @@ function InvoiceDetail() {
         </button>
       ) : null}
 
-      {can(user.role, "syncAccounting") && inv.status === "FINALIZED" ? (
+      {can(user, "syncAccounting") && inv.status === "FINALIZED" ? (
         <div className="app-card mt-4 space-y-3 p-4">
           <h3 className="font-bold">ثبت در حسابداری</h3>
           <input

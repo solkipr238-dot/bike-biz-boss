@@ -49,7 +49,7 @@ function UsersPage() {
     title: "",
   });
 
-  if (!can(user?.role, "users"))
+  if (!can(user, "users"))
     return (
       <EmptyState
         icon={<Users className="size-6" />}

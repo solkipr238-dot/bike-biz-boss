@@ -59,7 +59,7 @@ function SettingsPage() {
 
   if (!user) return null;
 
-  const isAdmin = can(user.role, "settings");
+  const isAdmin = can(user, "settings");
   const alarms = state.alarms;
   const updateAlarms = (patch: Partial<AlarmSettings>) =>
     setState((s) => ({ ...s, alarms: { ...s.alarms, ...patch } }));
