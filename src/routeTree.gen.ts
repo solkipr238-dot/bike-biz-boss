@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as EarningsRouteImport } from './routes/earnings'
 import { Route as ExportsRouteImport } from './routes/exports'
 import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as NotificationsRouteImport } from './routes/notifications'
@@ -35,6 +36,11 @@ const IndexRoute = IndexRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EarningsRoute = EarningsRouteImport.update({
+  id: '/earnings',
+  path: '/earnings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExportsRoute = ExportsRouteImport.update({
@@ -116,6 +122,7 @@ const TasksIdRoute = TasksIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/earnings': typeof EarningsRoute
   '/exports': typeof ExportsRoute
   '/inventory': typeof InventoryRoute
   '/notifications': typeof NotificationsRoute
@@ -135,6 +142,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/earnings': typeof EarningsRoute
   '/exports': typeof ExportsRoute
   '/inventory': typeof InventoryRoute
   '/notifications': typeof NotificationsRoute
@@ -155,6 +163,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/earnings': typeof EarningsRoute
   '/exports': typeof ExportsRoute
   '/inventory': typeof InventoryRoute
   '/notifications': typeof NotificationsRoute
@@ -176,6 +185,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/earnings'
     | '/exports'
     | '/inventory'
     | '/notifications'
@@ -195,6 +205,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/dashboard'
+    | '/earnings'
     | '/exports'
     | '/inventory'
     | '/notifications'
@@ -214,6 +225,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/dashboard'
+    | '/earnings'
     | '/exports'
     | '/inventory'
     | '/notifications'
@@ -234,6 +246,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
+  EarningsRoute: typeof EarningsRoute
   ExportsRoute: typeof ExportsRoute
   InventoryRoute: typeof InventoryRoute
   NotificationsRoute: typeof NotificationsRoute
@@ -265,6 +278,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/earnings': {
+      id: '/earnings'
+      path: '/earnings'
+      fullPath: '/earnings'
+      preLoaderRoute: typeof EarningsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/exports': {
@@ -378,6 +398,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
+  EarningsRoute: EarningsRoute,
   ExportsRoute: ExportsRoute,
   InventoryRoute: InventoryRoute,
   NotificationsRoute: NotificationsRoute,
