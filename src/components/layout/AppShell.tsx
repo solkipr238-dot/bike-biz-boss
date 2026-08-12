@@ -74,8 +74,9 @@ export function AppShell({ children }: { children: ReactNode }) {
     );
   }
 
-  const mobileNav = navFor(user.role);
-  const sideNav = [...navFor(user.role), ...DESKTOP_EXTRA.filter((n) => can(user, n.key))];
+  const mobileNav = navFor(user);
+  const sideNav = [...navFor(user), ...DESKTOP_EXTRA.filter((n) => can(user, n.key))];
+
   const unread = state.notifications.filter(
     (n) => !n.isRead && isForUser(n, user),
   ).length;
