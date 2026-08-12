@@ -1,4 +1,6 @@
+import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+
 import { toFa } from "@/lib/format";
 import type { ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
