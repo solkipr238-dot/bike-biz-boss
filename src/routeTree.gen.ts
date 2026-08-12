@@ -15,6 +15,7 @@ import { Route as EarningsRouteImport } from './routes/earnings'
 import { Route as ExportsRouteImport } from './routes/exports'
 import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as UsersRouteImport } from './routes/users'
 import { Route as BicyclePurchasesIndexRouteImport } from './routes/bicycle-purchases/index'
@@ -56,6 +57,11 @@ const InventoryRoute = InventoryRouteImport.update({
 const NotificationsRoute = NotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/exports': typeof ExportsRoute
   '/inventory': typeof InventoryRoute
   '/notifications': typeof NotificationsRoute
+  '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/users': typeof UsersRoute
   '/bicycle-purchases/$id': typeof BicyclePurchasesIdRoute
@@ -146,6 +153,7 @@ export interface FileRoutesByTo {
   '/exports': typeof ExportsRoute
   '/inventory': typeof InventoryRoute
   '/notifications': typeof NotificationsRoute
+  '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/users': typeof UsersRoute
   '/bicycle-purchases/$id': typeof BicyclePurchasesIdRoute
@@ -167,6 +175,7 @@ export interface FileRoutesById {
   '/exports': typeof ExportsRoute
   '/inventory': typeof InventoryRoute
   '/notifications': typeof NotificationsRoute
+  '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/users': typeof UsersRoute
   '/bicycle-purchases/$id': typeof BicyclePurchasesIdRoute
@@ -189,6 +198,7 @@ export interface FileRouteTypes {
     | '/exports'
     | '/inventory'
     | '/notifications'
+    | '/reports'
     | '/settings'
     | '/users'
     | '/bicycle-purchases/$id'
@@ -209,6 +219,7 @@ export interface FileRouteTypes {
     | '/exports'
     | '/inventory'
     | '/notifications'
+    | '/reports'
     | '/settings'
     | '/users'
     | '/bicycle-purchases/$id'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/exports'
     | '/inventory'
     | '/notifications'
+    | '/reports'
     | '/settings'
     | '/users'
     | '/bicycle-purchases/$id'
@@ -250,6 +262,7 @@ export interface RootRouteChildren {
   ExportsRoute: typeof ExportsRoute
   InventoryRoute: typeof InventoryRoute
   NotificationsRoute: typeof NotificationsRoute
+  ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
   UsersRoute: typeof UsersRoute
   BicyclePurchasesIdRoute: typeof BicyclePurchasesIdRoute
@@ -306,6 +319,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -402,6 +422,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExportsRoute: ExportsRoute,
   InventoryRoute: InventoryRoute,
   NotificationsRoute: NotificationsRoute,
+  ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
   UsersRoute: UsersRoute,
   BicyclePurchasesIdRoute: BicyclePurchasesIdRoute,
