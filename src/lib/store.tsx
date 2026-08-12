@@ -152,10 +152,19 @@ export type Task = {
   status: TaskStatus;
   createdBy: string;
   completedNote?: string;
+  /** Optional photo of the finished work (data URL). Never required. */
+  photo?: string;
   rejectReason?: string;
   accountingRef?: string;
   createdAt: string;
+  /** Exact moment the mechanic submitted the work. */
+  submittedAt?: string;
+  /** Exact moment the manager approved the wage. */
+  approvedAt?: string;
+  /** Exact moment of the last edit. */
+  updatedAt?: string;
 };
+
 
 export type InvoiceStatus =
   | "PRE_INVOICE"
