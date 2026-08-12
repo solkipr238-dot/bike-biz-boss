@@ -7,6 +7,8 @@ import {
   Wrench,
   FileText,
   PackageCheck,
+  TrendingUp,
+
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader, StatCard, Chip, EmptyState } from "@/components/ui-kit";
