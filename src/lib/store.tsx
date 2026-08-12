@@ -430,16 +430,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       user: state.users.find((u) => u.id === state.currentUserId) ?? null,
       login: (identifier: string, password: string) => {
         const id = identifier.trim().toLowerCase();
+        const pass = password.trim();
+        const digits = (v: string) => v.replace(/[^\d]/g, "");
         const found = state.users.find(
           (u) =>
             u.isActive &&
-            (u.username.toLowerCase() === id || u.phone === identifier.trim()) &&
-            u.password === password,
+            (u.username.trim().toLowerCase() === id ||
+              (!!u.phone && digits(u.phone) === digits(identifier))) &&
+            u.password.trim() === pass,
         );
         if (!found) return false;
         setRaw((s) => ({ ...s, currentUserId: found.id }));
         return true;
       },
+
       logout: () => setRaw((s) => ({ ...s, currentUserId: null })),
       setTheme: (t) => setRaw((s) => ({ ...s, theme: t })),
       notify: (n) =>
