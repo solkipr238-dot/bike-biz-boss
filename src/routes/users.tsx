@@ -57,6 +57,7 @@ function UsersPage() {
     password: "",
     role: "EMPLOYEE" as Role,
     title: "",
+    permissions: {} as Record<string, boolean>,
   });
 
   if (!can(user, "users"))
@@ -70,7 +71,15 @@ function UsersPage() {
 
   function openNew() {
     setEditId(null);
-    setForm({ fullName: "", username: "", phone: "", password: "", role: "EMPLOYEE", title: "" });
+    setForm({
+      fullName: "",
+      username: "",
+      phone: "",
+      password: "",
+      role: "EMPLOYEE",
+      title: "",
+      permissions: {},
+    });
     setOpen(true);
   }
 
@@ -84,6 +93,7 @@ function UsersPage() {
       password: "",
       role: u.role,
       title: u.title,
+      permissions: { ...(u.permissions ?? {}) },
     });
     setOpen(true);
   }
@@ -123,6 +133,7 @@ function UsersPage() {
                   title: form.title.trim(),
                   role: form.role,
                   isWorker: form.role === "MECHANIC",
+                  permissions: { ...form.permissions },
                   ...(form.password.trim() ? { password: form.password.trim() } : {}),
                 }
               : u,
@@ -139,9 +150,11 @@ function UsersPage() {
               role: form.role,
               isActive: true,
               isWorker: form.role === "MECHANIC",
+              permissions: { ...form.permissions },
             },
           ],
     }));
+
     setOpen(false);
     toast.success(editId ? "کاربر ویرایش شد" : "کاربر جدید افزوده شد");
   }
