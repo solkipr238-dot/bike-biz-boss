@@ -14,6 +14,8 @@ import {
   Plus,
   LogOut,
   Bike,
+  Wallet,
+  BarChart3,
 } from "lucide-react";
 import { can, isForUser, ROLE_LABEL, useStore, type Role } from "@/lib/store";
 import { cn } from "@/lib/utils";
