@@ -35,10 +35,13 @@ const ALL_NAV: NavItem[] = [
 
 const DESKTOP_EXTRA: NavItem[] = [
   { to: "/purchase-invoices", label: "فاکتورهای خرید", icon: Receipt, key: "invoices" },
+  { to: "/reports", label: "گزارش و تحلیل", icon: BarChart3, key: "reports" },
+  { to: "/earnings", label: "دستمزد و پاداش", icon: Wallet, key: "earnings" },
   { to: "/exports", label: "خروجی حسابداری", icon: FileSpreadsheet, key: "exports" },
   { to: "/users", label: "مدیریت کاربران", icon: Users, key: "users" },
   { to: "/settings", label: "تنظیمات", icon: Settings, key: "settings" },
 ];
+
 
 function navFor(user: { role: Role; permissions?: Record<string, boolean> }) {
   if (user.role === "MECHANIC")
