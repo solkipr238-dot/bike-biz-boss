@@ -490,6 +490,8 @@ export const CAN: Record<string, Role[]> = {
   tasks: ["ADMIN", "STORE_MANAGER", "EMPLOYEE", "MECHANIC"],
   invoices: ["ADMIN", "STORE_MANAGER"],
   notifications: ["ADMIN", "STORE_MANAGER", "EMPLOYEE", "MECHANIC"],
+  earnings: ["ADMIN", "STORE_MANAGER", "MECHANIC"],
+  reports: ["ADMIN", "STORE_MANAGER"],
   users: ["ADMIN"],
   settings: ["ADMIN"],
   exports: ["ADMIN", "STORE_MANAGER"],
@@ -498,7 +500,45 @@ export const CAN: Record<string, Role[]> = {
   personalWithdrawal: ["ADMIN", "STORE_MANAGER"],
 };
 
-export function can(role: Role | undefined, key: keyof typeof CAN | string) {
-  if (!role) return false;
-  return (CAN[key] ?? []).includes(role);
+/** Human labels for the manual access panel in user management. */
+export const PERMISSION_LABEL: Record<string, string> = {
+  dashboard: "خانه و داشبورد",
+  purchases: "خرید دوچرخه",
+  inventory: "انبار دوچرخه‌ها",
+  expenses: "هزینه‌ها",
+  tasks: "وظایف",
+  invoices: "فاکتورهای خرید",
+  notifications: "اعلان‌ها",
+  earnings: "دستمزد و پاداش",
+  reports: "گزارش و تحلیل",
+  users: "مدیریت کاربران",
+  settings: "تنظیمات سامانه",
+  exports: "خروجی حسابداری",
+  approve: "تأیید و بررسی موارد",
+  syncAccounting: "ثبت در حسابداری",
+  personalWithdrawal: "برداشت شخصی",
+};
+
+export const PERMISSION_KEYS = Object.keys(PERMISSION_LABEL);
+
+/**
+ * Access check. Accepts a role or a full user; per-user overrides set by the
+ * main admin always win over the role matrix.
+ */
+export function can(
+  subject: Role | User | undefined | null,
+  key: keyof typeof CAN | string,
+): boolean {
+  if (!subject) return false;
+  if (typeof subject === "string") return (CAN[key] ?? []).includes(subject);
+  if (!subject.isActive) return false;
+  const override = subject.permissions?.[key];
+  if (typeof override === "boolean") return override;
+  return (CAN[key] ?? []).includes(subject.role);
 }
+
+/** Effective access map for a user (used by the admin access panel). */
+export function effectivePermissions(u: User): Record<string, boolean> {
+  return Object.fromEntries(PERMISSION_KEYS.map((k) => [k, can(u, k)]));
+}
+
