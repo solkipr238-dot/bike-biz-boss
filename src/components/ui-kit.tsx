@@ -155,6 +155,7 @@ export function StatCard({
   value,
   tone = "info",
   to,
+  search,
   hint,
 }: {
   icon: ReactNode;
@@ -163,6 +164,7 @@ export function StatCard({
   tone?: Tone;
   /** When set the whole card becomes a link into the matching section. */
   to?: string;
+  search?: Record<string, string>;
   hint?: string;
 }) {
   const body = (
@@ -179,11 +181,13 @@ export function StatCard({
     return (
       <Link
         to={to}
-        className="app-card block p-4 transition-transform active:scale-[0.98] hover:border-primary/40"
+        {...(search ? { search } : {})}
+        className="app-card block p-4 transition-transform hover:border-primary/40 active:scale-[0.98]"
       >
         {body}
       </Link>
     );
+
   return <div className="app-card p-4">{body}</div>;
 }
 
