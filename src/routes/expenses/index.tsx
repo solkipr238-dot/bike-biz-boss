@@ -112,7 +112,7 @@ function ExpensesPage() {
             { value: "BONUS", label: "پاداش" },
             { value: "PENALTY", label: "جریمه" },
             { value: "PERSONAL_WITHDRAWAL", label: "شخصی" },
-            { value: "MISCELLANEOUS", label: "متفرقه" },
+            { value: "MISCELLANEOUS", label: "هزینه" },
           ]}
         />
       </div>
