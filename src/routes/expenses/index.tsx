@@ -7,7 +7,32 @@ import { EXPENSE_LABEL, useStore, type ExpenseCategory } from "@/lib/store";
 import { faDateTimeLong, money, toFa } from "@/lib/format";
 import { useFakeLoading } from "@/hooks/use-fake-loading";
 
+export type Range = "TODAY" | "WEEK" | "MONTH" | "YEAR" | "ALL";
+
+export const RANGE_OPTIONS: { value: Range; label: string }[] = [
+  { value: "TODAY", label: "امروز" },
+  { value: "WEEK", label: "هفته گذشته" },
+  { value: "MONTH", label: "ماه گذشته" },
+  { value: "YEAR", label: "امسال" },
+  { value: "ALL", label: "همه" },
+];
+
+export function inRange(iso: string, range: Range) {
+  if (range === "ALL") return true;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return false;
+  const now = new Date();
+  if (range === "TODAY") return d.toDateString() === now.toDateString();
+  const days = range === "WEEK" ? 7 : range === "MONTH" ? 30 : 365;
+  return now.getTime() - d.getTime() <= days * 86400000;
+}
+
 export const Route = createFileRoute("/expenses/")({
+  validateSearch: (s: Record<string, unknown>): { range?: Range } => ({
+    range: (["TODAY", "WEEK", "MONTH", "YEAR", "ALL"] as const).includes(s['range'] as Range)
+      ? (s['range'] as Range)
+      : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "مدیریت هزینه‌ها | مدیریت تعمیرگاه" },
@@ -25,6 +50,7 @@ export const Route = createFileRoute("/expenses/")({
     </AppShell>
   ),
 });
+
 
 const ICONS: Record<ExpenseCategory, typeof Banknote> = {
   SALARY: Banknote,
