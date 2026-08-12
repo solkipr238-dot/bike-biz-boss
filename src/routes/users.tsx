@@ -5,7 +5,17 @@ import { Pencil, Plus, RotateCcw, Trash2, Users } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Chip, EmptyState, PageHeader } from "@/components/ui-kit";
 import { Field, SelectField } from "@/components/forms/fields";
-import { ROLE_LABEL, can, uid, useStore, type Role } from "@/lib/store";
+import {
+  CAN,
+  PERMISSION_KEYS,
+  PERMISSION_LABEL,
+  ROLE_LABEL,
+  can,
+  uid,
+  useStore,
+  type Role,
+} from "@/lib/store";
+
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
