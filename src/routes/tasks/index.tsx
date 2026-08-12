@@ -67,7 +67,7 @@ function TasksPage() {
     wage: 0,
   });
 
-  const isManager = can(user?.role, "approve");
+  const isManager = can(user, "approve");
   const workers = state.users.filter((u) => u.isWorker || u.role === "MECHANIC");
 
   const myTasks = useMemo(

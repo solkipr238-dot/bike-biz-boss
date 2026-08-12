@@ -5,7 +5,17 @@ import { Pencil, Plus, RotateCcw, Trash2, Users } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Chip, EmptyState, PageHeader } from "@/components/ui-kit";
 import { Field, SelectField } from "@/components/forms/fields";
-import { ROLE_LABEL, can, uid, useStore, type Role } from "@/lib/store";
+import {
+  CAN,
+  PERMISSION_KEYS,
+  PERMISSION_LABEL,
+  ROLE_LABEL,
+  can,
+  uid,
+  useStore,
+  type Role,
+} from "@/lib/store";
+
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
@@ -47,9 +57,10 @@ function UsersPage() {
     password: "",
     role: "EMPLOYEE" as Role,
     title: "",
+    permissions: {} as Record<string, boolean>,
   });
 
-  if (!can(user?.role, "users"))
+  if (!can(user, "users"))
     return (
       <EmptyState
         icon={<Users className="size-6" />}
@@ -60,7 +71,15 @@ function UsersPage() {
 
   function openNew() {
     setEditId(null);
-    setForm({ fullName: "", username: "", phone: "", password: "", role: "EMPLOYEE", title: "" });
+    setForm({
+      fullName: "",
+      username: "",
+      phone: "",
+      password: "",
+      role: "EMPLOYEE",
+      title: "",
+      permissions: {},
+    });
     setOpen(true);
   }
 
@@ -74,6 +93,7 @@ function UsersPage() {
       password: "",
       role: u.role,
       title: u.title,
+      permissions: { ...(u.permissions ?? {}) },
     });
     setOpen(true);
   }
@@ -113,6 +133,7 @@ function UsersPage() {
                   title: form.title.trim(),
                   role: form.role,
                   isWorker: form.role === "MECHANIC",
+                  permissions: { ...form.permissions },
                   ...(form.password.trim() ? { password: form.password.trim() } : {}),
                 }
               : u,
@@ -129,9 +150,11 @@ function UsersPage() {
               role: form.role,
               isActive: true,
               isWorker: form.role === "MECHANIC",
+              permissions: { ...form.permissions },
             },
           ],
     }));
+
     setOpen(false);
     toast.success(editId ? "کاربر ویرایش شد" : "کاربر جدید افزوده شد");
   }
@@ -276,6 +299,63 @@ function UsersPage() {
               onChange={(v) => setForm({ ...form, password: v })}
               placeholder={editId ? "برای تغییر رمز، وارد کنید" : "حداقل ۴ کاراکتر"}
             />
+
+            <div className="rounded-2xl border p-4">
+              <p className="text-sm font-extrabold">دسترسی‌های دستی</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                به‌صورت پیش‌فرض دسترسی‌ها از روی نقش تعیین می‌شود. با این کلیدها می‌توانید برای این
+                کاربر دسترسی خاصی را آزاد یا محدود کنید.
+              </p>
+              <ul className="mt-3 space-y-2">
+                {PERMISSION_KEYS.map((key) => {
+                  const override = form.permissions[key];
+                  const allowed =
+                    typeof override === "boolean" ? override : CAN[key]?.includes(form.role) ?? false;
+                  return (
+                    <li key={key} className="flex items-center justify-between gap-3">
+                      <span className="text-sm font-bold">{PERMISSION_LABEL[key]}</span>
+                      <div className="flex shrink-0 items-center gap-2">
+                        {typeof override === "boolean" ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = { ...form.permissions };
+                              delete next[key];
+                              setForm({ ...form, permissions: next });
+                            }}
+                            className="text-xs font-bold text-muted-foreground underline"
+                          >
+                            پیش‌فرض نقش
+                          </button>
+                        ) : null}
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={allowed}
+                          aria-label={PERMISSION_LABEL[key]}
+                          onClick={() =>
+                            setForm({
+                              ...form,
+                              permissions: { ...form.permissions, [key]: !allowed },
+                            })
+                          }
+                          className={`h-7 w-12 rounded-full p-1 transition-colors ${
+                            allowed ? "bg-primary" : "bg-muted"
+                          }`}
+                        >
+                          <span
+                            className={`block size-5 rounded-full bg-card transition-transform ${
+                              allowed ? "-translate-x-5" : ""
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+
 
             <button
               type="submit"

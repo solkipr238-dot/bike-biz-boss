@@ -14,6 +14,8 @@ import {
   Plus,
   LogOut,
   Bike,
+  Wallet,
+  BarChart3,
 } from "lucide-react";
 import { can, isForUser, ROLE_LABEL, useStore, type Role } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -33,19 +35,24 @@ const ALL_NAV: NavItem[] = [
 
 const DESKTOP_EXTRA: NavItem[] = [
   { to: "/purchase-invoices", label: "فاکتورهای خرید", icon: Receipt, key: "invoices" },
+  { to: "/reports", label: "گزارش و تحلیل", icon: BarChart3, key: "reports" },
+  { to: "/earnings", label: "دستمزد و پاداش", icon: Wallet, key: "earnings" },
   { to: "/exports", label: "خروجی حسابداری", icon: FileSpreadsheet, key: "exports" },
   { to: "/users", label: "مدیریت کاربران", icon: Users, key: "users" },
   { to: "/settings", label: "تنظیمات", icon: Settings, key: "settings" },
 ];
 
-function navFor(role: Role) {
-  if (role === "MECHANIC")
+
+function navFor(user: { role: Role; permissions?: Record<string, boolean> }) {
+  if (user.role === "MECHANIC")
     return [
       { to: "/tasks", label: "وظایف من", icon: ClipboardList, key: "tasks" },
+      { to: "/earnings", label: "دستمزد من", icon: Wallet, key: "earnings" },
       { to: "/notifications", label: "اعلان‌ها", icon: Bell, key: "notifications" },
-    ];
-  return ALL_NAV.filter((n) => can(role, n.key));
+    ].filter((n) => can(user as never, n.key));
+  return ALL_NAV.filter((n) => can(user as never, n.key));
 }
+
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, state, logout } = useStore();
@@ -70,8 +77,9 @@ export function AppShell({ children }: { children: ReactNode }) {
     );
   }
 
-  const mobileNav = navFor(user.role);
-  const sideNav = [...navFor(user.role), ...DESKTOP_EXTRA.filter((n) => can(user.role, n.key))];
+  const mobileNav = navFor(user);
+  const sideNav = [...navFor(user), ...DESKTOP_EXTRA.filter((n) => can(user, n.key))];
+
   const unread = state.notifications.filter(
     (n) => !n.isRead && isForUser(n, user),
   ).length;
@@ -81,9 +89,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const fabActions: { label: string; onClick: () => void }[] = [];
   if (user.role !== "MECHANIC")
     fabActions.push({ label: "ثبت خرید دوچرخه", onClick: () => go("/bicycle-purchases/new") });
-  if (can(user.role, "invoices"))
+  if (can(user, "invoices"))
     fabActions.push({ label: "ثبت پیش‌فاکتور خرید", onClick: () => go("/purchase-invoices/new") });
-  if (can(user.role, "approve"))
+  if (can(user, "approve"))
     fabActions.push({ label: "ثبت وظیفه جدید", onClick: () => go("/tasks?new=1") });
 
   function go(to: string) {
@@ -193,7 +201,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     ["SALARY", "حقوق"],
                     ["BONUS", "پاداش"],
                     ["PENALTY", "جریمه"],
-                    ...(can(user.role, "personalWithdrawal")
+                    ...(can(user, "personalWithdrawal")
                       ? [["PERSONAL_WITHDRAWAL", "برداشت شخصی"]]
                       : []),
                     ["MISCELLANEOUS", "هزینه متفرقه"],

@@ -105,7 +105,7 @@ function ExportsPage() {
       .filter((r) => (to ? new Date(r.date) <= new Date(to) : true));
   }, [state, types, from, to]);
 
-  if (!can(user?.role, "exports"))
+  if (!can(user, "exports"))
     return (
       <EmptyState
         icon={<FileSpreadsheet className="size-6" />}

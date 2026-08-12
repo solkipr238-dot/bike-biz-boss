@@ -7,6 +7,8 @@ import {
   Wrench,
   FileText,
   PackageCheck,
+  TrendingUp,
+
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader, StatCard, Chip, EmptyState } from "@/components/ui-kit";
@@ -68,7 +70,11 @@ function Dashboard() {
     );
   }
 
-  const todayExpenses = state.expenses.reduce((s, e) => s + e.amount, 0);
+  const isToday = (iso: string) => new Date(iso).toDateString() === new Date().toDateString();
+  const todayExpenses = state.expenses
+    .filter((e) => isToday(e.date))
+    .reduce((s, e) => s + e.amount, 0);
+  const allExpenses = state.expenses.reduce((s, e) => s + e.amount, 0);
   const pendingInvoices = state.invoices.filter((i) => i.status !== "SYNCED_TO_ACCOUNTING").length;
   const activeTasks = state.tasks.filter(
     (t) => t.status === "IN_PROGRESS" || t.status === "PENDING",
@@ -76,6 +82,7 @@ function Dashboard() {
   const visiblePurchases = isManager
     ? state.purchases
     : state.purchases.filter((p) => p.createdBy === user.id);
+  const todayPurchases = visiblePurchases.filter((p) => isToday(p.createdAt)).length;
   const needsAction = state.purchases.filter((p) => p.status === "PENDING");
 
   return (
@@ -89,28 +96,51 @@ function Dashboard() {
         <StatCard
           icon={<Banknote className="size-5" />}
           label="هزینه‌های امروز"
-          value={`${toFa((todayExpenses / 1_000_000).toFixed(1))}M`}
+          value={money(todayExpenses, state.currency)}
+          hint="مشاهده هزینه‌های امروز"
           tone="danger"
+          to="/expenses"
+          search={{ range: "TODAY" }}
+        />
+        <StatCard
+          icon={<TrendingUp className="size-5" />}
+          label="مجموع هزینه‌ها"
+          value={money(allExpenses, state.currency)}
+          hint="تحلیل هفته، ماه و سال"
+          tone="warning"
+          to="/reports"
         />
         <StatCard
           icon={<ShoppingCart className="size-5" />}
           label="خریدها"
           value={toFa(visiblePurchases.length)}
+          hint={`امروز: ${toFa(todayPurchases)} مورد`}
           tone="info"
+          to="/bicycle-purchases"
         />
         <StatCard
           icon={<FileText className="size-5" />}
           label="فاکتورهای معلق"
           value={toFa(pendingInvoices)}
           tone="warning"
+          to="/purchase-invoices"
         />
         <StatCard
           icon={<Wrench className="size-5" />}
           label="وظایف فعال"
           value={toFa(activeTasks)}
           tone="success"
+          to="/tasks"
+        />
+        <StatCard
+          icon={<PackageCheck className="size-5" />}
+          label="انبار دوچرخه"
+          value={toFa(state.purchases.filter((p) => p.status !== "REJECTED").length)}
+          tone="info"
+          to="/inventory"
         />
       </div>
+
 
       <section className="mt-8">
         <h2 className="mb-3 text-lg font-extrabold">نیاز به اقدام</h2>

@@ -1,4 +1,6 @@
+import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+
 import { toFa } from "@/lib/format";
 import type { ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -152,22 +154,43 @@ export function StatCard({
   label,
   value,
   tone = "info",
+  to,
+  search,
+  hint,
 }: {
   icon: ReactNode;
   label: string;
   value: string;
   tone?: Tone;
+  /** When set the whole card becomes a link into the matching section. */
+  to?: string;
+  search?: Record<string, string>;
+  hint?: string;
 }) {
-  return (
-    <div className="app-card p-4">
+  const body = (
+    <>
       <div className={cn("grid size-11 place-items-center rounded-2xl", toneClass[tone])}>
         {icon}
       </div>
       <p className="mt-3 text-sm text-muted-foreground">{label}</p>
       <p className="num mt-1 text-2xl font-extrabold">{value}</p>
-    </div>
+      {hint ? <p className="mt-1 text-xs font-bold text-primary">{hint}</p> : null}
+    </>
   );
+  if (to)
+    return (
+      <Link
+        to={to}
+        {...(search ? { search } : {})}
+        className="app-card block p-4 transition-transform hover:border-primary/40 active:scale-[0.98]"
+      >
+        {body}
+      </Link>
+    );
+
+  return <div className="app-card p-4">{body}</div>;
 }
+
 
 export function Fa({ children }: { children: string | number }) {
   return <span className="num">{toFa(children)}</span>;

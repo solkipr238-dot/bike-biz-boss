@@ -11,9 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as EarningsRouteImport } from './routes/earnings'
 import { Route as ExportsRouteImport } from './routes/exports'
 import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as UsersRouteImport } from './routes/users'
 import { Route as BicyclePurchasesIndexRouteImport } from './routes/bicycle-purchases/index'
@@ -37,6 +39,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EarningsRoute = EarningsRouteImport.update({
+  id: '/earnings',
+  path: '/earnings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ExportsRoute = ExportsRouteImport.update({
   id: '/exports',
   path: '/exports',
@@ -50,6 +57,11 @@ const InventoryRoute = InventoryRouteImport.update({
 const NotificationsRoute = NotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -116,9 +128,11 @@ const TasksIdRoute = TasksIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/earnings': typeof EarningsRoute
   '/exports': typeof ExportsRoute
   '/inventory': typeof InventoryRoute
   '/notifications': typeof NotificationsRoute
+  '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/users': typeof UsersRoute
   '/bicycle-purchases/$id': typeof BicyclePurchasesIdRoute
@@ -135,9 +149,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/earnings': typeof EarningsRoute
   '/exports': typeof ExportsRoute
   '/inventory': typeof InventoryRoute
   '/notifications': typeof NotificationsRoute
+  '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/users': typeof UsersRoute
   '/bicycle-purchases/$id': typeof BicyclePurchasesIdRoute
@@ -155,9 +171,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/earnings': typeof EarningsRoute
   '/exports': typeof ExportsRoute
   '/inventory': typeof InventoryRoute
   '/notifications': typeof NotificationsRoute
+  '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/users': typeof UsersRoute
   '/bicycle-purchases/$id': typeof BicyclePurchasesIdRoute
@@ -176,9 +194,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/earnings'
     | '/exports'
     | '/inventory'
     | '/notifications'
+    | '/reports'
     | '/settings'
     | '/users'
     | '/bicycle-purchases/$id'
@@ -195,9 +215,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/dashboard'
+    | '/earnings'
     | '/exports'
     | '/inventory'
     | '/notifications'
+    | '/reports'
     | '/settings'
     | '/users'
     | '/bicycle-purchases/$id'
@@ -214,9 +236,11 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/dashboard'
+    | '/earnings'
     | '/exports'
     | '/inventory'
     | '/notifications'
+    | '/reports'
     | '/settings'
     | '/users'
     | '/bicycle-purchases/$id'
@@ -234,9 +258,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
+  EarningsRoute: typeof EarningsRoute
   ExportsRoute: typeof ExportsRoute
   InventoryRoute: typeof InventoryRoute
   NotificationsRoute: typeof NotificationsRoute
+  ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
   UsersRoute: typeof UsersRoute
   BicyclePurchasesIdRoute: typeof BicyclePurchasesIdRoute
@@ -267,6 +293,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/earnings': {
+      id: '/earnings'
+      path: '/earnings'
+      fullPath: '/earnings'
+      preLoaderRoute: typeof EarningsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/exports': {
       id: '/exports'
       path: '/exports'
@@ -286,6 +319,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -378,9 +418,11 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
+  EarningsRoute: EarningsRoute,
   ExportsRoute: ExportsRoute,
   InventoryRoute: InventoryRoute,
   NotificationsRoute: NotificationsRoute,
+  ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
   UsersRoute: UsersRoute,
   BicyclePurchasesIdRoute: BicyclePurchasesIdRoute,
@@ -397,13 +439,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

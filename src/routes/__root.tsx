@@ -12,7 +12,9 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { StoreProvider } from "@/lib/store";
+import { useBackButton } from "@/hooks/use-back-button";
 import { Toaster } from "@/components/ui/sonner";
+
 
 function NotFoundComponent() {
   return (
@@ -133,6 +135,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useBackButton();
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -143,3 +146,4 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+

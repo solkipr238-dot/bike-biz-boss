@@ -51,7 +51,7 @@ function InventoryPage() {
   const [repairFor, setRepairFor] = useState<BicyclePurchase | null>(null);
   const [form, setForm] = useState({ workerId: "", title: "", description: "", wage: 0 });
 
-  const isManager = can(user?.role, "approve");
+  const isManager = can(user, "approve");
   const workers = state.users.filter((u) => u.isActive && (u.isWorker || u.role === "MECHANIC"));
 
   /** Only bikes that are actually owned by the shop (approved purchases). */
