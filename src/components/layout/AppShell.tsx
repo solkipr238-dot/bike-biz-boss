@@ -38,14 +38,16 @@ const DESKTOP_EXTRA: NavItem[] = [
   { to: "/settings", label: "تنظیمات", icon: Settings, key: "settings" },
 ];
 
-function navFor(role: Role) {
-  if (role === "MECHANIC")
+function navFor(user: { role: Role; permissions?: Record<string, boolean> }) {
+  if (user.role === "MECHANIC")
     return [
       { to: "/tasks", label: "وظایف من", icon: ClipboardList, key: "tasks" },
+      { to: "/earnings", label: "دستمزد من", icon: Wallet, key: "earnings" },
       { to: "/notifications", label: "اعلان‌ها", icon: Bell, key: "notifications" },
-    ];
-  return ALL_NAV.filter((n) => can(role, n.key));
+    ].filter((n) => can(user as never, n.key));
+  return ALL_NAV.filter((n) => can(user as never, n.key));
 }
+
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, state, logout } = useStore();
