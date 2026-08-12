@@ -64,6 +64,9 @@ const ICONS: Record<ExpenseCategory, typeof Banknote> = {
 function ExpensesPage() {
   const { state, user } = useStore();
   const loading = useFakeLoading();
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const range = search.range;
   const [filter, setFilter] = useState<"ALL" | ExpenseCategory>("ALL");
 
   const list = useMemo(() => {
@@ -71,24 +74,35 @@ function ExpensesPage() {
     const isManager = user.role === "ADMIN" || user.role === "STORE_MANAGER";
     return state.expenses
       .filter((e) => isManager || e.createdBy === user.id)
+      .filter((e) => inRange(e.date, range))
       .filter((e) => filter === "ALL" || e.category === filter);
-  }, [state.expenses, filter, user]);
+  }, [state.expenses, filter, user, range]);
 
   const total = list.reduce((s, e) => s + e.amount, 0);
+  const rangeLabel = RANGE_OPTIONS.find((r) => r.value === range)?.label ?? "همه";
 
   return (
     <>
       <PageHeader title="مدیریت هزینه‌ها" subtitle="ثبت، بررسی و تأیید هزینه‌های مجموعه" />
 
       <div className="rounded-2xl bg-gradient-to-l from-accent to-primary-soft p-5">
-        <p className="text-sm text-muted-foreground">مجموع هزینه‌های این ماه</p>
+        <p className="text-sm text-muted-foreground">مجموع هزینه‌ها ({rangeLabel})</p>
         <p className="num mt-2 text-3xl font-extrabold">{money(total, state.currency)}</p>
         <p className="mt-2 flex items-center gap-1 text-sm font-bold text-primary">
-          <TrendingUp className="size-4" /> {toFa(12)}٪ افزایش نسبت به ماه قبل
+          <TrendingUp className="size-4" /> {toFa(list.length)} مورد ثبت‌شده
         </p>
       </div>
 
       <div className="mt-4">
+        <FilterChips
+          value={range}
+          onChange={(v) => void navigate({ search: { range: v }, replace: true })}
+          options={RANGE_OPTIONS}
+        />
+      </div>
+
+      <div className="mt-3">
+
         <FilterChips
           value={filter}
           onChange={setFilter}
