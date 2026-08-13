@@ -192,3 +192,29 @@
     display: none !important;
   }
 }
+
+@utility hero-media {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: center 35%;
+}
+
+@utility hero-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to bottom,
+      oklch(0.16 0.02 260 / 0.55) 0%,
+      oklch(0.16 0.02 260 / 0.72) 55%,
+      oklch(0.16 0.02 260 / 0.94) 100%
+    ),
+    linear-gradient(
+      to left,
+      color-mix(in oklab, var(--primary) 45%, transparent),
+      transparent 60%
+    );
+}
