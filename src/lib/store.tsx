@@ -222,6 +222,30 @@ export type AppNotification = {
   delivered: boolean;
 };
 
+export type Attachment = {
+  kind: "image" | "video" | "file" | "voice";
+  /** Data URL of the attachment (stored locally on the device). */
+  url: string;
+  name: string;
+};
+
+export type ChatMessage = {
+  id: string;
+  /** "public" | "partners" | "dm:<idA>|<idB>" */
+  channel: string;
+  senderId: string;
+  text: string;
+  attachment?: Attachment;
+  createdAt: string;
+  editedAt?: string;
+  readBy: string[];
+};
+
+/** Stable channel id for a private chat between two users. */
+export function dmKey(a: string, b: string) {
+  return `dm:${[a, b].sort().join("|")}`;
+}
+
 /** Quiet-hours style alarm window managed by the main admin. */
 export type AlarmSettings = {
   enabled: boolean;
@@ -256,6 +280,7 @@ export type State = {
   tasks: Task[];
   invoices: PurchaseInvoice[];
   notifications: AppNotification[];
+  messages: ChatMessage[];
 };
 
 export const DEFAULT_ALARMS: AlarmSettings = {
@@ -295,6 +320,7 @@ const initialState: State = {
   tasks: [],
   invoices: [],
   notifications: [],
+  messages: [],
 };
 
 
@@ -494,6 +520,8 @@ export const CAN: Record<string, Role[]> = {
   tasks: ["ADMIN", "STORE_MANAGER", "EMPLOYEE", "MECHANIC"],
   invoices: ["ADMIN", "STORE_MANAGER"],
   notifications: ["ADMIN", "STORE_MANAGER", "EMPLOYEE", "MECHANIC"],
+  messages: ["ADMIN", "STORE_MANAGER", "EMPLOYEE", "MECHANIC"],
+  partnersChat: ["ADMIN", "STORE_MANAGER"],
   earnings: ["ADMIN", "STORE_MANAGER", "MECHANIC"],
   reports: ["ADMIN", "STORE_MANAGER"],
   users: ["ADMIN"],
@@ -513,6 +541,8 @@ export const PERMISSION_LABEL: Record<string, string> = {
   tasks: "وظایف",
   invoices: "فاکتورهای خرید",
   notifications: "اعلان‌ها",
+  messages: "پیام‌رسان داخلی",
+  partnersChat: "گروه شرکا",
   earnings: "دستمزد و پاداش",
   reports: "گزارش و تحلیل",
   users: "مدیریت کاربران",
