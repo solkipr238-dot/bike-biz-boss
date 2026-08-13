@@ -2,6 +2,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import {
   Bell,
+  MessageCircle,
   Home,
   ShoppingCart,
   Banknote,
@@ -31,10 +32,11 @@ const ALL_NAV: NavItem[] = [
   { to: "/inventory", label: "انبار", icon: Boxes, key: "inventory" },
   { to: "/expenses", label: "هزینه‌ها", icon: Banknote, key: "expenses" },
   { to: "/tasks", label: "وظایف", icon: ClipboardList, key: "tasks" },
-  { to: "/notifications", label: "اعلان‌ها", icon: Bell, key: "notifications" },
+  { to: "/messages", label: "پیام‌ها", icon: MessageCircle, key: "messages" },
 ];
 
 const DESKTOP_EXTRA: NavItem[] = [
+  { to: "/notifications", label: "اعلان‌ها", icon: Bell, key: "notifications" },
   { to: "/purchase-invoices", label: "فاکتورهای خرید", icon: Receipt, key: "invoices" },
   { to: "/reports", label: "گزارش و تحلیل", icon: BarChart3, key: "reports" },
   { to: "/earnings", label: "دستمزد و پاداش", icon: Wallet, key: "earnings" },
@@ -49,7 +51,7 @@ function navFor(user: { role: Role; permissions?: Record<string, boolean> }) {
     return [
       { to: "/tasks", label: "وظایف من", icon: ClipboardList, key: "tasks" },
       { to: "/earnings", label: "دستمزد من", icon: Wallet, key: "earnings" },
-      { to: "/notifications", label: "اعلان‌ها", icon: Bell, key: "notifications" },
+      { to: "/messages", label: "پیام‌ها", icon: MessageCircle, key: "messages" },
     ].filter((n) => can(user as never, n.key));
   return ALL_NAV.filter((n) => can(user as never, n.key));
 }
