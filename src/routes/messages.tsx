@@ -260,7 +260,7 @@ function Chat({
     <div className="flex min-h-[70vh] flex-col">
       <header className="sticky top-[64px] z-10 -mx-4 mb-3 flex items-center gap-3 border-b bg-background/95 px-4 py-3 backdrop-blur">
         <button
-          onClick={() => void navigate({ to: "/messages", search: {} })}
+          onClick={() => void navigate({ to: "/messages", search: { c: undefined } })}
           aria-label="بازگشت به فهرست گفت‌وگوها"
           className="grid size-9 shrink-0 place-items-center rounded-full border"
         >
@@ -274,7 +274,7 @@ function Chat({
 
       <div className="flex-1 space-y-3">
         {messages.length === 0 ? (
-          <EmptyState title="هنوز پیامی نیست" description="اولین پیام را شما بفرستید." />
+          <EmptyState icon={<Send className="size-6" />} title="هنوز پیامی نیست" description="اولین پیام را شما بفرستید." />
         ) : null}
         {messages.map((m) => {
           const mine = m.senderId === me.id;

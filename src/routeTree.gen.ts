@@ -14,6 +14,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as EarningsRouteImport } from './routes/earnings'
 import { Route as ExportsRouteImport } from './routes/exports'
 import { Route as InventoryRouteImport } from './routes/inventory'
+import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -52,6 +53,11 @@ const ExportsRoute = ExportsRouteImport.update({
 const InventoryRoute = InventoryRouteImport.update({
   id: '/inventory',
   path: '/inventory',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NotificationsRoute = NotificationsRouteImport.update({
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/earnings': typeof EarningsRoute
   '/exports': typeof ExportsRoute
   '/inventory': typeof InventoryRoute
+  '/messages': typeof MessagesRoute
   '/notifications': typeof NotificationsRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/earnings': typeof EarningsRoute
   '/exports': typeof ExportsRoute
   '/inventory': typeof InventoryRoute
+  '/messages': typeof MessagesRoute
   '/notifications': typeof NotificationsRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
@@ -174,6 +182,7 @@ export interface FileRoutesById {
   '/earnings': typeof EarningsRoute
   '/exports': typeof ExportsRoute
   '/inventory': typeof InventoryRoute
+  '/messages': typeof MessagesRoute
   '/notifications': typeof NotificationsRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
@@ -197,6 +206,7 @@ export interface FileRouteTypes {
     | '/earnings'
     | '/exports'
     | '/inventory'
+    | '/messages'
     | '/notifications'
     | '/reports'
     | '/settings'
@@ -218,6 +228,7 @@ export interface FileRouteTypes {
     | '/earnings'
     | '/exports'
     | '/inventory'
+    | '/messages'
     | '/notifications'
     | '/reports'
     | '/settings'
@@ -239,6 +250,7 @@ export interface FileRouteTypes {
     | '/earnings'
     | '/exports'
     | '/inventory'
+    | '/messages'
     | '/notifications'
     | '/reports'
     | '/settings'
@@ -261,6 +273,7 @@ export interface RootRouteChildren {
   EarningsRoute: typeof EarningsRoute
   ExportsRoute: typeof ExportsRoute
   InventoryRoute: typeof InventoryRoute
+  MessagesRoute: typeof MessagesRoute
   NotificationsRoute: typeof NotificationsRoute
   ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
@@ -312,6 +325,13 @@ declare module '@tanstack/react-router' {
       path: '/inventory'
       fullPath: '/inventory'
       preLoaderRoute: typeof InventoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/notifications': {
@@ -421,6 +441,7 @@ const rootRouteChildren: RootRouteChildren = {
   EarningsRoute: EarningsRoute,
   ExportsRoute: ExportsRoute,
   InventoryRoute: InventoryRoute,
+  MessagesRoute: MessagesRoute,
   NotificationsRoute: NotificationsRoute,
   ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
