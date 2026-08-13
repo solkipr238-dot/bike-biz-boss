@@ -85,7 +85,7 @@ function NewExpense() {
       priority: "NORMAL",
     });
     toast.success("هزینه با موفقیت ثبت شد");
-    void navigate({ to: "/expenses" });
+    void navigate({ to: "/expenses", search: { range: "ALL" } });
   }
 
   return (
@@ -139,7 +139,7 @@ function NewExpense() {
           onChange={setDescription}
           placeholder="اختیاری"
         />
-        <FormActions onCancel={() => navigate({ to: "/expenses" })} submitLabel="ثبت هزینه" />
+        <FormActions onCancel={() => navigate({ to: "/expenses", search: { range: "ALL" } })} submitLabel="ثبت هزینه" />
       </form>
     </>
   );

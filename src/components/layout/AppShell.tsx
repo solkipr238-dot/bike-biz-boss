@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { can, isForUser, ROLE_LABEL, useStore, type Role } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import bikeHero from "@/assets/bike-hero.jpg.asset.json";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
