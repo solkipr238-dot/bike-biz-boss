@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { Bike, Eye, EyeOff, Lock, LogIn, User } from "lucide-react";
 import { toast } from "sonner";
 import { useStore } from "@/lib/store";
+import bikeHero from "@/assets/bike-hero.jpg.asset.json";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
