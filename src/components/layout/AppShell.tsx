@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { can, isForUser, ROLE_LABEL, useStore, type Role } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import bikeHero from "@/assets/bike-hero.jpg.asset.json";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
@@ -146,29 +147,39 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <div className="flex min-h-screen w-full min-w-0 flex-col">
         {/* Header */}
-        <header className="no-print safe-top sticky top-0 z-30 border-b bg-card/90 backdrop-blur">
-          <div className="mx-auto grid w-full max-w-5xl grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3">
-            <Link to="/notifications" className="relative grid size-10 place-items-center rounded-full hover:bg-accent" aria-label="اعلان‌ها">
-              <Bell className="size-5 text-primary" />
+        <header className="no-print safe-top sticky top-0 z-30 overflow-hidden border-b shadow-[var(--shadow-hero)]">
+          <img src={bikeHero.url} alt="" aria-hidden className="hero-media" />
+          <div className="hero-veil" />
+          <div className="relative mx-auto grid w-full max-w-5xl grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3">
+            <Link
+              to="/notifications"
+              className="relative grid size-10 place-items-center rounded-full border border-on-hero/25 bg-on-hero/10 backdrop-blur transition-colors hover:bg-on-hero/20"
+              aria-label="اعلان‌ها"
+            >
+              <Bell className="size-5 text-on-hero" />
               {unread > 0 ? (
                 <span className="absolute end-2 top-2 size-2 rounded-full bg-destructive" />
               ) : null}
             </Link>
-            <div className="flex min-w-0 items-center justify-center gap-2">
-              <Bike className="size-6 shrink-0 text-primary lg:hidden" />
-              <span className="truncate text-base font-extrabold text-primary">
+            <div className="flex min-w-0 flex-col items-center justify-center text-center">
+              <span className="flex items-center gap-2 truncate text-base font-extrabold tracking-tight text-on-hero">
+                <Bike className="size-6 shrink-0 lg:hidden" />
                 مدیریت تعمیرگاه
+              </span>
+              <span className="truncate text-[11px] font-bold text-on-hero-muted">
+                قدرت، سرعت، دقت در هر رکاب
               </span>
             </div>
             <Link to="/settings" aria-label="پروفایل" className="shrink-0">
-              <Avatar className="size-10 border-2 border-primary/30">
-                <AvatarFallback className="bg-accent text-sm font-bold text-accent-foreground">
+              <Avatar className="size-10 border-2 border-on-hero/50 backdrop-blur">
+                <AvatarFallback className="bg-on-hero/15 text-sm font-bold text-on-hero">
                   {user.fullName.slice(0, 1)}
                 </AvatarFallback>
               </Avatar>
             </Link>
           </div>
         </header>
+
 
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-32 pt-5 lg:pb-12">{children}</main>
 
