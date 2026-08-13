@@ -52,17 +52,28 @@ function LoginPage() {
 
   return (
     <div className="safe-top safe-bottom flex min-h-screen items-center justify-center px-4 py-8">
-      <div className="app-card w-full max-w-md p-6 sm:p-8">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <div className="grid size-20 place-items-center rounded-full bg-accent">
-            <Bike className="size-10 text-primary" />
+      <div className="app-card w-full max-w-md overflow-hidden">
+        <div className="relative h-52 w-full">
+          <img
+            src={bikeHero.url}
+            alt="رکاب‌زن حرفه‌ای در مسیر خاکی"
+            className="hero-media"
+          />
+          <div className="hero-veil" />
+          <div className="relative flex h-full flex-col items-center justify-end gap-1 p-5 text-center">
+            <div className="grid size-14 place-items-center rounded-2xl border border-on-hero/30 bg-on-hero/10 backdrop-blur">
+              <Bike className="size-8 text-on-hero" />
+            </div>
+            <h1 className="text-2xl font-extrabold tracking-tight text-on-hero">دز رکاب</h1>
+            <p className="text-xs font-bold text-on-hero-muted">قدرت، سرعت، دقت در هر رکاب</p>
           </div>
-          <h1 className="text-2xl font-extrabold text-primary">دز رکاب</h1>
-          <h2 className="mt-3 text-xl font-extrabold leading-8">
-            خوش امدید به اپلیکیشن دز رکاب
-          </h2>
+        </div>
+        <div className="p-6 sm:p-8">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <h2 className="text-xl font-extrabold leading-8">خوش امدید به اپلیکیشن دز رکاب</h2>
           <p className="text-sm text-muted-foreground">مدیریت هوشمند فروشگاه و تعمیرگاه</p>
         </div>
+
 
 
         <form onSubmit={submit} className="mt-7 space-y-4" noValidate>
