@@ -222,6 +222,30 @@ export type AppNotification = {
   delivered: boolean;
 };
 
+export type Attachment = {
+  kind: "image" | "video" | "file" | "voice";
+  /** Data URL of the attachment (stored locally on the device). */
+  url: string;
+  name: string;
+};
+
+export type ChatMessage = {
+  id: string;
+  /** "public" | "partners" | "dm:<idA>|<idB>" */
+  channel: string;
+  senderId: string;
+  text: string;
+  attachment?: Attachment;
+  createdAt: string;
+  editedAt?: string;
+  readBy: string[];
+};
+
+/** Stable channel id for a private chat between two users. */
+export function dmKey(a: string, b: string) {
+  return `dm:${[a, b].sort().join("|")}`;
+}
+
 /** Quiet-hours style alarm window managed by the main admin. */
 export type AlarmSettings = {
   enabled: boolean;
