@@ -157,7 +157,9 @@ function LoginPage() {
         <p className="mt-6 text-center text-sm text-muted-foreground">
           نیاز به راهنمایی دارید؟ <span className="font-bold text-primary">تماس با پشتیبانی</span>
         </p>
+        </div>
       </div>
     </div>
+
   );
 }
