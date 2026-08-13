@@ -280,6 +280,7 @@ export type State = {
   tasks: Task[];
   invoices: PurchaseInvoice[];
   notifications: AppNotification[];
+  messages: ChatMessage[];
 };
 
 export const DEFAULT_ALARMS: AlarmSettings = {
@@ -319,6 +320,7 @@ const initialState: State = {
   tasks: [],
   invoices: [],
   notifications: [],
+  messages: [],
 };
 
 
